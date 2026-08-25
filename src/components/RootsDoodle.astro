@@ -1,0 +1,40 @@
+---
+/* Margin doodle for "Build reusable foundations that scale": a little
+   doodled forest that grows slowly — five abstract zigzag pines springing
+   up from the centre outward, each with a bouncy pop. Runs once on scroll via the shared
+   [data-sketch]/[data-run] machinery. Hidden <1180px. */
+interface Props { top?: number }
+const { top = 230 } = Astro.props;
+---
+<aside class="doodle" style={`top:${top}px`} data-sketch aria-hidden="true">
+  <svg viewBox="0 0 170 150" width="165">
+    <!-- the pines: centre first, then outward, each with a springy pop -->
+    <g class="t" style="--d:.25s"><path class="dr tr" style="--d:.25s" pathLength="1" d="M85 118 V 36 M85 40 l -4 4 m 4 -4 l 4 4 M85 50 l -5 4 m 5 -4 l 5 4 M85 61 l -7 5 m 7 -5 l 7 5 M85 73 l -8 5 m 8 -5 l 8 5 M85 86 l -10 6 m 10 -6 l 10 6 M85 100 l -11 6 m 11 -6 l 11 6" /></g>
+    <g class="t" style="--d:.8s"><path class="dr tr" style="--d:.8s" pathLength="1" d="M60 116 V 44 M60 48 l -4 4 m 4 -4 l 4 4 M60 58 l -6 4 m 6 -4 l 6 4 M60 69 l -7 5 m 7 -5 l 7 5 M60 81 l -9 5 m 9 -5 l 9 5 M60 94 l -10 6 m 10 -6 l 10 6" /></g>
+    <g class="t" style="--d:.8s"><path class="dr tr" style="--d:.8s" pathLength="1" d="M110 116 V 48 M110 52 l -4 4 m 4 -4 l 4 4 M110 62 l -6 4 m 6 -4 l 6 4 M110 73 l -7 5 m 7 -5 l 7 5 M110 85 l -9 5 m 9 -5 l 9 5 M110 97 l -10 6 m 10 -6 l 10 6" /></g>
+    <g class="t" style="--d:1.35s"><path class="dr tr" style="--d:1.35s" pathLength="1" d="M34 118 V 62 M34 66 l -5 4 m 5 -4 l 5 4 M34 76 l -7 4 m 7 -4 l 7 4 M34 87 l -8 5 m 8 -5 l 8 5 M34 99 l -10 5 m 10 -5 l 10 5" /></g>
+    <g class="t" style="--d:1.35s"><path class="dr tr" style="--d:1.35s" pathLength="1" d="M133 120 V 72 M133 76 l -4 4 m 4 -4 l 4 4 M133 86 l -6 4 m 6 -4 l 6 4 M133 97 l -8 5 m 8 -5 l 8 5" /></g>
+  </svg>
+</aside>
+
+<style>
+  .doodle { position: absolute; right: calc(100% + 40px); width: 175px; --pencil: color-mix(in srgb, color-mix(in srgb, var(--acc) 40%, var(--ink)) 64%, transparent); }
+  svg { display: block; overflow: visible; }
+  .dr { fill: none; stroke: var(--pencil); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; stroke-dashoffset: 1.02; }
+  .dr.tr { stroke-width: 1.9; }
+  /* the forest wears the theme: strongest ink at the centre, fading to graphite at the edges */
+  .t:nth-of-type(1) .tr { stroke: color-mix(in srgb, var(--acc) 85%, var(--ink)); }
+  .t:nth-of-type(2) .tr, .t:nth-of-type(3) .tr { stroke: color-mix(in srgb, var(--acc) 60%, var(--ink)); }
+  .t:nth-of-type(4) .tr, .t:nth-of-type(5) .tr { stroke: color-mix(in srgb, var(--acc) 35%, color-mix(in srgb, var(--ink) 70%, transparent)); }
+  .t { transform-box: fill-box; transform-origin: 50% 100%; transform: scale(.45); }
+  [data-run] .dr { animation-name: skdraw; animation-duration: .5s; animation-timing-function: cubic-bezier(.45, 0, .3, 1); animation-fill-mode: forwards; animation-delay: var(--d, 0s); }
+  [data-run] .dr.tr { animation-duration: .6s; }
+  [data-run] .t { animation: treepop .7s cubic-bezier(.3, 1.75, .45, 1) forwards; animation-delay: var(--d, 0s); }
+  @keyframes skdraw { to { stroke-dashoffset: 0; } }
+  @keyframes treepop { to { transform: scale(1); } }
+  @media (max-width: 1180px) { .doodle { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .dr, [data-run] .dr { animation: none; stroke-dashoffset: 0; }
+    .t, [data-run] .t { animation: none; transform: none; }
+  }
+</style>

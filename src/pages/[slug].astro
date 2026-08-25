@@ -1,0 +1,84 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import HeroStrip from '../components/HeroStrip.astro';
+import Toc from '../components/Toc.astro';
+import PressLinks from '../components/PressLinks.astro';
+
+export async function getStaticPaths() {
+  const studies = await getCollection('caseStudies');
+  return studies.map((s) => ({ params: { slug: s.id }, props: { study: s } }));
+}
+const { study } = Astro.props;
+const { Content } = await render(study);
+const { title, subtitle, thumb, og, press, toc } = study.data;
+---
+<Base title={`${title} — Jevin Sidhu`} description={subtitle} image={og ?? thumb}>
+  <article id="post" class="post">
+    <a id="ejectBtn" class="back" href="/" data-hot><span aria-hidden="true">←</span><span>Back</span></a>
+    <button id="shareBtn" class="share" type="button" data-hot aria-label="Copy link to this page">
+      <span class="s-idle"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6.5 9.5 L9.5 6.5 M7.5 4.5 l1.5 -1.5 a2.4 2.4 0 0 1 3.4 3.4 l-1.5 1.5 M8.5 11.5 l-1.5 1.5 a2.4 2.4 0 0 1 -3.4 -3.4 l1.5 -1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Copy link</span></span>
+      <span class="s-done" aria-hidden="true"><span class="s-in"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5 L6.5 12 L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Link copied</span></span></span>
+    </button>
+    <HeroStrip thumb={thumb} />
+    <Toc items={toc} />
+    <div class="col">
+      <header id="s0">
+        <h1>{title}</h1>
+        <p class="sub">{subtitle}</p>
+        <PressLinks press={press} class="press-post" />
+      </header>
+      <Content />
+    </div>
+  </article>
+  <script src="../scripts/post.ts"></script>
+</Base>
+
+<style>
+  .post { background: var(--bg); min-height: 100vh; padding-bottom: 120px; overflow-x: clip; }
+  .back {
+    position: fixed; top: 20px; left: 50px; /* centers with the stuck TOC pill (46.5px tall at top:14) */ z-index: 40; display: flex; align-items: center; gap: 8px;
+    font: 500 13px var(--font-sans); color: rgba(var(--inkrgb), .6); text-decoration: none;
+    background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(var(--inkrgb), .12); border-radius: 99px; padding: 8px 16px 8px 13px;
+    transition: color .2s, border-color .2s;
+  }
+  .back:hover { color: var(--ink); border-color: rgba(var(--inkrgb), .3); }
+  .share {
+    position: fixed; top: 20px; right: 50px; z-index: 40; cursor: pointer; box-sizing: border-box;
+    font: 500 13px var(--font-sans); color: rgba(var(--inkrgb), .6);
+    background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(var(--inkrgb), .12); border-radius: 99px; padding: 8px 16px;
+    display: flex; align-items: center; white-space: nowrap;
+    transition: color .2s, border-color .2s, width .3s ease;
+  }
+  .share:hover { color: var(--ink); border-color: rgba(var(--inkrgb), .3); }
+  .share .s-idle { display: flex; align-items: center; gap: 7px; transition: opacity .28s ease, transform .28s ease; }
+  /* out of flow so the pill hugs "Copy link"; the button width animates to fit this on copy */
+  .share .s-done { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transform: translateY(6px); color: var(--acc); transition: opacity .28s ease, transform .28s ease; }
+  .share .s-in { display: flex; align-items: center; gap: 7px; }
+  .share[data-copied] .s-idle { opacity: 0; transform: translateY(-6px); }
+  .share[data-copied] .s-done { opacity: 1; transform: none; }
+  .share[data-copied] { border-color: color-mix(in srgb, var(--acc) 45%, transparent); }
+  .col { max-width: 640px; margin: 0 auto; padding: 40px 20px 0; }
+  h1 { font: 600 50px/1.1 var(--font-sans); letter-spacing: -.03em; color: var(--ink); margin: 0; text-wrap: pretty; }
+  .sub { font: 19px/1.6 var(--font-sans); color: var(--t2); margin: 20px 0 0; }
+  .col :global(.press-post) { margin-top: 28px; }
+  .col :global(.lede) { font: 16.5px/1.8 var(--font-sans); color: var(--t1); margin: 34px 0 18px; }
+  /* the intro stack (player → entry cards → shelf) breathes */
+  .col :global(.player + .row) { margin-top: 48px; }
+  .col :global(.author) {
+    display: flex; gap: 16px; align-items: center; border-top: 1px solid var(--line2); margin-top: 44px; padding-top: 26px;
+    font: 13px/1.6 var(--font-sans); color: var(--t3);
+  }
+  .col :global(.author p) { font: inherit; color: inherit; margin: 0; }
+  .col :global(.author img) { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none; border: 1.5px solid var(--line); }
+  .col :global(.author a) { color: var(--ink); text-decoration: underline; text-decoration-color: rgba(var(--accrgb), .5); text-underline-offset: 2px; }
+  @media (max-width: 780px) {
+    .back { top: 12px; left: 14px; transition: color .2s, border-color .2s, transform .35s ease; }
+    .share { top: 12px; right: 14px; transition: color .2s, border-color .2s, width .3s ease, transform .35s ease; }
+    :global(html[data-chrome-hidden]) .back, :global(html[data-chrome-hidden]) .share { transform: translateY(-72px); }
+    h1 { font-size: 36px; }
+    .col { padding-top: 24px; }
+  }
+</style>

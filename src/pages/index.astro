@@ -1,0 +1,73 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import MemoryCard from '../components/MemoryCard.astro';
+import PressLinks from '../components/PressLinks.astro';
+
+const studies = (await getCollection('caseStudies')).sort((a, b) => +b.data.date - +a.data.date);
+const featured = studies[0];
+---
+<Base title="Jevin Sidhu" description="Jevin Sidhu is a generalist software engineer at Patreon who builds playful, high-quality software.">
+  <main id="home" class="home">
+    <div class="rail">
+      <h1 class="name">Jevin Sidhu</h1>
+      <div class="bio">
+        <p>I enjoy creating high-quality software that solves someone's problem. Three years of intense focus building this kind of software allowed me to grow from new grad to Staff Engineer at Patreon.</p>
+        <p>My latest launch was Clips, Patreon's first AI product for creators. I owned this project cross functionally: engineering, design, research and product. I ideated, prototyped and took every creator call in the Alpha myself. Then, I used my learnings to iterate and launch the feature through Beta, a statistically significant experimentation win and general availability. This project led to the formation of the AI Applications team. Today, I work on foundations and other AI products, grounded in Patreon's value to put creators first.</p>
+        <p>I grew up playing video games (NBA Live, Smash Bros, and Halo) and watching a lot of sci-fi (The Matrix, Blade Runner, and Star Wars) — this inspires me to make software that is playful and has character.</p>
+      </div>
+      <p class="contact">You can find me on <a class="link-u" href="https://twitter.com/jevinsidhu">X</a> and <a class="link-u" href="https://instagram.com/jevinsidhu">Instagram</a>, or reach me via <a class="link-u" href="mailto:jevin.sidhu@gmail.com">email</a>.</p>
+    </div>
+
+    {featured && (
+      <div class="feature">
+        <MemoryCard href={`/${featured.id}`} thumb={featured.data.thumb} label={`Read: ${featured.data.title}`} />
+        <a class="meta" href={`/${featured.id}`} data-hot>
+          <div class="title">{featured.data.title}</div>
+          <div class="blurb">{featured.data.blurb}</div>
+        </a>
+        <PressLinks press={featured.data.press} class="press-home" />
+      </div>
+    )}
+  </main>
+  <script src="../scripts/home.ts"></script>
+</Base>
+
+<style>
+  /* One centred composition: both halves live in a contained two-column
+     grid with a deliberate gap, so on large screens the whitespace frames
+     the pair instead of pooling between them. The name's cap-height and the
+     card's top edge share a line (.rail padding-top compensates for the
+     display face's built-in headroom). */
+  .home {
+    min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 525px) minmax(0, 480px);
+    align-content: center; align-items: start; justify-content: center; gap: clamp(72px, 12vw, 192px);
+    max-width: 1320px; margin: 0 auto; padding: 24px clamp(24px, 4vw, 56px);
+    overflow: visible; box-sizing: border-box;
+  }
+  /* the warm ground spans the whole viewport, behind the contained grid */
+  .home::before {
+    content: ''; position: fixed; inset: 0; z-index: -1;
+    background: radial-gradient(95% 70% at 50% 115%, rgba(var(--accrgb), .16), transparent 60%), var(--bg);
+  }
+  .rail { padding-top: 0; }
+  /* -.22em cancels the face's internal headroom so the cap-height sits
+     exactly on the card's top line at any size */
+  .name { font: 400 clamp(34px, 2.2vw + 14px, 44px)/1.08 var(--font-display); color: var(--ink); letter-spacing: 0; margin: -.22em 0 0; }
+  .bio { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; text-wrap: pretty; }
+  .bio p, .contact { font: clamp(14px, .35vw + 10px, 15px)/1.7 var(--font-sans); color: var(--ink); margin: 0; }
+  .contact { margin-top: 16px; text-wrap: pretty; }
+
+  .feature { display: flex; flex-direction: column; align-items: flex-start; perspective: 900px; }
+  .meta { display: block; text-decoration: none; margin-top: 6px; max-width: 400px; }
+  .title { font: 600 21px var(--font-serif); letter-spacing: -.01em; color: var(--ink); }
+  .blurb { font: 14px/1.6 var(--font-sans); color: rgba(var(--inkrgb), .55); margin-top: 8px; }
+  .feature :global(.press-home) { width: 100%; max-width: 400px; }
+
+  @media (max-width: 780px) {
+    .home { grid-template-columns: 1fr; align-items: start; gap: 0; padding: 48px 24px 120px; }
+    .rail { padding: 0; max-width: none; }
+    .feature { padding: 76px 0 0; perspective: none; }
+    .feature :global(.cardW) { width: min(400px, 100%); }
+  }
+</style>

@@ -1,0 +1,39 @@
+---
+/* Margin doodle for "Leave authorship with the creator": an autograph in
+   the theme's ink — two confident strokes and a dot, then a caption.
+   Draws on scroll via [data-sketch]/[data-run]. Hidden <1180px. */
+interface Props { top?: number }
+const { top = 420 } = Astro.props;
+---
+<aside class="doodle" style={`top:${top}px`} data-sketch aria-hidden="true">
+  <svg viewBox="0 0 210 120" width="190">
+    <!-- the autograph: two confident strokes and a dot -->
+    <path class="dr sig ink" style="--d:.25s" pathLength="1"
+      d="M14 72 C 20 30, 38 28, 37 54 C 36 72, 24 80, 20 71 C 16 62, 32 54, 46 58 C 58 61, 60 72, 71 64 S 87 44, 93 59 C 97 70, 106 68, 114 58 C 121 49, 127 56, 133 63 Q 141 70, 154 58" />
+    <path class="dr swash ink" style="--d:1.35s" pathLength="1"
+      d="M24 88 Q 96 102 168 80 q -22 12 -44 12" />
+    <path class="dr ink" style="--d:1.95s" pathLength="1" d="M164 64 q 2 -2 3 0 q -1 2 -3 0" />
+    <text class="tx" style="--d:2.3s" x="105" y="114" text-anchor="middle">— signed, the creator</text>
+  </svg>
+</aside>
+
+<style>
+  .doodle { position: absolute; left: calc(100% + 44px); width: 200px; --pencil: color-mix(in srgb, color-mix(in srgb, var(--acc) 40%, var(--ink)) 62%, transparent); }
+  svg { display: block; }
+  .dr { fill: none; stroke: var(--pencil); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; stroke-dashoffset: 1.02; }
+  .dr.ink { stroke: color-mix(in srgb, var(--acc) 78%, var(--ink)); }
+  .dr.sig { stroke-width: 2.1; }
+  .dr.swash { stroke-width: 1.9; }
+  .tx { opacity: 0; font: italic 11px var(--font-mono); fill: var(--pencil); }
+  [data-run] .dr { animation: skdraw .6s cubic-bezier(.45, 0, .3, 1) forwards; animation-delay: var(--d, 0s); }
+  [data-run] .dr.sig { animation-duration: 1.05s; }
+  [data-run] .dr.swash { animation-duration: .55s; }
+  [data-run] .tx { animation: skfade .45s ease forwards; animation-delay: var(--d, 0s); }
+  @keyframes skdraw { to { stroke-dashoffset: 0; } }
+  @keyframes skfade { to { opacity: 1; } }
+  @media (max-width: 1180px) { .doodle { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .dr, [data-run] .dr { animation: none; stroke-dashoffset: 0; }
+    .tx, [data-run] .tx { animation: none; opacity: 1; }
+  }
+</style>

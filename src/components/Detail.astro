@@ -1,0 +1,46 @@
+---
+/* A "specimen" row for the Craft section: numbered eyebrow + heading +
+   prose on one side, the demo media on the other, alternating sides down
+   the section (flip). Hairline-separated so the set reads as a designed
+   index of small details. Stacks on mobile. */
+interface Props { n: number; title: string; flip?: boolean; wide?: boolean }
+const { n, title, flip = false, wide = false } = Astro.props;
+---
+<div class:list={['detail', { flip, wide }]}>
+  <div class="dt">
+    <div class="eyebrow">Detail {String(n).padStart(2, '0')}</div>
+    <h3>{title}</h3>
+    <slot />
+  </div>
+  <div class="dm"><slot name="media" /></div>
+  {Astro.slots.has('below') && <div class="db"><slot name="below" /></div>}
+</div>
+
+<style>
+  .detail {
+    display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 30px;
+    align-items: start; padding: 34px 0 38px; border-top: 1px solid var(--line2); margin-top: 6px;
+  }
+  .detail.flip { grid-template-columns: 300px minmax(0, 1fr); }
+  .detail.flip .dt { order: 2; }
+  .detail.flip .dm { order: 1; }
+  .eyebrow { font: 600 12px var(--font-sans); letter-spacing: .02em; color: var(--acc); margin-bottom: 10px; }
+  .dt h3 { font: 600 19px/1.3 var(--font-sans); letter-spacing: -.015em; color: var(--ink); margin: 0 0 10px; } /* .dt prefix out-ranks Section's global h3 margin */
+  .dt :global(p) { font: 15.5px/1.75 var(--font-sans); color: var(--t1); margin: 0 0 14px; }
+  .dt :global(p:last-child) { margin-bottom: 0; }
+  .dm :global(.phones) { margin-top: 0; gap: 12px; }
+  .dm :global(.phones + .phones) { margin-top: 14px; }
+  /* full-width follow-on under a two-column row (e.g. earlier explorations) */
+  .db { grid-column: 1 / -1; margin-top: 26px; order: 3; /* after text+media even in flipped rows */ }
+  .db :global(p) { font: 15.5px/1.75 var(--font-sans); color: var(--t1); margin: 0 0 16px; }
+  .db :global(.phones) { margin-top: 0; max-width: 520px; }
+  /* wide rows: full-width media below the text — for side-by-side pairs */
+  .detail.wide { display: block; }
+  .detail.wide .dm { margin-top: 22px; }
+  .detail.wide .dm :global(.phones) { gap: 18px; }
+  @media (max-width: 640px) {
+    .detail, .detail.flip { grid-template-columns: 1fr; gap: 18px; padding: 28px 0 30px; }
+    .detail.flip .dt { order: 1; }
+    .detail.flip .dm { order: 2; }
+  }
+</style>

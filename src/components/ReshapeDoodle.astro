@@ -1,0 +1,76 @@
+---
+/* Margin doodle for "Let creator feedback reshape the product": penciled
+   blocks stack into a wobbly tower, topple, then rebuild into a straight
+   one — and sparks fly when the last block lands. Runs once on scroll via
+   the shared [data-sketch]/[data-run] machinery. Hidden <1180px. */
+interface Props { top?: number }
+const { top = 920 } = Astro.props;
+---
+<aside class="doodle" style={`top:${top}px`} data-sketch aria-hidden="true">
+  <svg viewBox="0 0 150 110" width="150">
+    <g class="b b1"><path d="M27 80.6 q 17 -1.8 34.6 .3 q 4.2 .5 4 4.6 q .6 4 -.4 8.4 q -.5 3.9 -4.6 4 q -17.4 1.4 -34.2 -.5 q -4.1 -.5 -4 -4.5 q -.5 -4.2 .6 -8 q .6 -3.8 4 -4.3" /></g>
+    <g class="b b2"><path d="M26.4 61 q 18 -1 35.4 -.2 q 4.4 .1 4.3 4.4 q -.6 4.4 .1 8.5 q 0 3.9 -4.5 4.4 q -17 1.1 -34.3 -.1 q -4.4 -.4 -4.2 -4.5 q .1 -4.4 .4 -8.3 q .4 -3.9 2.8 -4.2" /></g>
+    <g class="b b3"><path d="M27.2 40.4 q 16.6 -2.2 34 -.1 q 4.4 .6 4.4 4.7 q -.3 4.1 -.1 8.2 q .2 4 -4.3 4.3 q -17.3 1.6 -34.4 .2 q -4.3 -.3 -4.2 -4.4 q -.3 -4.1 .2 -8.2 q .3 -4.1 4.4 -4.7" /></g>
+    <g class="b b4"><path d="M26.8 20.8 q 17.4 -1.4 34.8 .2 q 4 .4 3.8 4.4 q .4 4.2 -.2 8.3 q -.3 4.1 -4.4 4.3 q -17 1.2 -34.2 -.3 q -4.2 -.4 -4 -4.4 q -.4 -4 .3 -8.1 q .5 -4 3.9 -4.4" /></g>
+    <g class="sparks">
+      <path d="M72 14 q 5 -5 10 -7 M78 25 q 6 -2 12 -2 M68 6 q 1 -6 5 -11 M80 34 q 6 1 10 4 M59 3 q -2 -6 -1 -11" />
+    </g>
+  </svg>
+</aside>
+
+<style>
+  .doodle { position: absolute; left: calc(100% + 44px); width: 160px; --pencil: color-mix(in srgb, color-mix(in srgb, var(--acc) 40%, var(--ink)) 64%, transparent); }
+  svg { display: block; overflow: visible; }
+  .b path { fill: none; stroke: var(--pencil); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .b { opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .sparks { opacity: 0; transform-box: fill-box; transform-origin: 60% 80%; }
+  .sparks path { fill: none; stroke: color-mix(in srgb, var(--acc) 82%, var(--ink)); stroke-width: 2.2; stroke-linecap: round; }
+  .sparks circle { fill: color-mix(in srgb, var(--acc) 82%, var(--ink)); }
+
+  [data-run] .b { animation-duration: 3.4s; animation-timing-function: cubic-bezier(.45, .1, .35, .95); animation-fill-mode: forwards; }
+  [data-run] .b1 { animation-name: tw1; }
+  [data-run] .b2 { animation-name: tw2; }
+  [data-run] .b3 { animation-name: tw3; }
+  [data-run] .b4 { animation-name: tw4; }
+  /* build wobbly → hold → topple → hold → rebuild straight */
+  @keyframes tw1 {
+    0% { opacity: 0; transform: translateY(-24px); }
+    7% { opacity: 1; transform: none; }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes tw2 {
+    0%, 9% { opacity: 0; transform: translate(7px, -30px) rotate(0); }
+    15% { opacity: 1; transform: translate(7px, 0) rotate(6deg); }
+    38% { transform: translate(7px, 0) rotate(6deg); }
+    46%, 56% { transform: translate(30px, 17px) rotate(26deg); }
+    64% { opacity: 1; transform: none; }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes tw3 {
+    0%, 17% { opacity: 0; transform: translate(-8px, -30px) rotate(0); }
+    23% { opacity: 1; transform: translate(-8px, 0) rotate(-8deg); }
+    38% { transform: translate(-8px, 0) rotate(-8deg); }
+    46%, 62% { transform: translate(-32px, 36px) rotate(-62deg); }
+    74% { opacity: 1; transform: none; }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes tw4 {
+    0%, 25% { opacity: 0; transform: translate(13px, -30px) rotate(0); }
+    31% { opacity: 1; transform: translate(13px, 0) rotate(11deg); }
+    38% { transform: translate(13px, 0) rotate(11deg); }
+    46%, 70% { transform: translate(46px, 56px) rotate(78deg); }
+    82% { transform: translate(0, -26px) rotate(0); }
+    88% { opacity: 1; transform: translateY(2px); }
+    92% { transform: none; }
+    100% { opacity: 1; transform: none; }
+  }
+  [data-run] .sparks { animation: rspark .5s cubic-bezier(.3, 1.4, .4, 1) 3.05s forwards; }
+  @keyframes rspark {
+    0% { opacity: 0; transform: scale(.2) rotate(-14deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+  }
+  @media (max-width: 1180px) { .doodle { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .b, [data-run] .b, .sparks, [data-run] .sparks { animation: none; opacity: 1; transform: none; }
+  }
+</style>

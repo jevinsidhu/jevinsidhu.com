@@ -1,0 +1,181 @@
+/* ---------- Theme tokens ----------
+   Five palettes. Each theme sets four raw values; every other tone is
+   derived with color-mix so a theme swap is a single attribute change. */
+:root,
+[data-theme='cherry'] { --acc: #c8452c; --accrgb: 200, 69, 44; --bg: oklch(97.8% 0.012 40);  --ink: #33201c; --inkrgb: 51, 32, 28; }
+[data-theme='maple']  { --acc: #d47a4a; --accrgb: 212, 122, 74; --bg: oklch(98.6% 0.006 92);  --ink: #2b2b22; --inkrgb: 43, 43, 34; }
+[data-theme='ocean']  { --acc: #4a7fd4; --accrgb: 74, 127, 212; --bg: oklch(98.4% 0.008 240); --ink: #22303e; --inkrgb: 34, 48, 62; }
+[data-theme='matcha'] { --acc: #5fa05a; --accrgb: 95, 160, 90;  --bg: oklch(98.4% 0.01 140);  --ink: #26301f; --inkrgb: 38, 48, 31; }
+[data-theme='grape']  { --acc: #8b6bc7; --accrgb: 139, 107, 199; --bg: oklch(98.3% 0.008 300); --ink: #2a2433; --inkrgb: 42, 36, 51; }
+
+:root {
+  --t1: color-mix(in srgb, var(--ink) 92%, var(--bg));
+  --t2: color-mix(in srgb, var(--ink) 80%, var(--bg));
+  --t3: color-mix(in srgb, var(--ink) 68%, var(--bg));
+  --t4: color-mix(in srgb, var(--ink) 52%, var(--bg));
+  --t5: color-mix(in srgb, var(--ink) 42%, var(--bg));
+  --line: color-mix(in srgb, var(--ink) 24%, var(--bg));
+  --line2: color-mix(in srgb, var(--ink) 16%, var(--bg));
+  --card: color-mix(in srgb, var(--bg) 55%, white);
+  --ph1: color-mix(in srgb, var(--bg) 88%, var(--ink));
+  --ph2: color-mix(in srgb, var(--bg) 82%, var(--ink));
+
+  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+  --font-serif: 'Newsreader Variable', 'Newsreader', Georgia, serif;
+  --font-display: 'Casserole Classic', 'Newsreader Variable', Georgia, serif; /* the name on the home page */
+
+  --ease-morph: cubic-bezier(0.3, 0.9, 0.3, 1);
+  --ease-pop: cubic-bezier(0.3, 1.2, 0.4, 1);
+  color-scheme: light;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+@font-face {
+  font-family: 'Casserole Classic';
+  src: url('/fonts/Casserole-Classic.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: block; /* one short word: block beats a swap flash */
+}
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; overflow-x: clip; }
+::selection { background: var(--acc); color: var(--bg); }
+a { color: var(--ink); }
+a:hover { color: var(--acc); }
+img, video { max-width: 100%; height: auto; }
+button { font: inherit; }
+
+/* Custom leaf cursor only where a fine pointer exists and motion is welcome */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  /* on the root too: the ::view-transition overlay isn't matched by `*`, and
+     `cursor` inherits into the pseudo-elements — otherwise the native arrow
+     pops in for the duration of every page morph */
+  html[data-leaf], html[data-leaf] *,
+  html[data-leaf]::view-transition, html[data-leaf]::view-transition-group(*),
+  html[data-leaf]::view-transition-image-pair(*), html[data-leaf]::view-transition-old(*),
+  html[data-leaf]::view-transition-new(*) { cursor: none !important; }
+}
+
+/* ---------- View transitions ----------
+   The five card slices on the home page and the five filmstrip frames on a
+   case study share transition names slice-0…slice-4, so the browser morphs
+   each one across the navigation. Timing mirrors the reference draft:
+   620 ms, springy ease, 45 ms stagger. */
+::view-transition { pointer-events: none; }
+::view-transition-group(*) {
+  animation-duration: 0.62s;
+  animation-timing-function: var(--ease-morph);
+}
+::view-transition-group(slice-0) { animation-delay: 0ms; }
+::view-transition-group(slice-1) { animation-delay: 45ms; }
+::view-transition-group(slice-2) { animation-delay: 90ms; }
+::view-transition-group(slice-3) { animation-delay: 135ms; }
+::view-transition-group(slice-4) { animation-delay: 180ms; }
+/* Both ends show the same image column at the same scale-per-width, centred
+   vertically (card slice: the whole column; filmstrip frame: its middle).
+   So the two snapshots are pixel-identical wherever they overlap: we draw
+   both at the group's width with their natural aspect, centred, and let the
+   image pair clip. The morph is then a pure scale-and-crop — no crossfade,
+   no cut, no ghosting. */
+::view-transition-image-pair(slice-0), ::view-transition-image-pair(slice-1),
+::view-transition-image-pair(slice-2), ::view-transition-image-pair(slice-3),
+::view-transition-image-pair(slice-4) {
+  isolation: auto; overflow: clip;
+  animation-duration: 0.62s; animation-timing-function: var(--ease-morph); animation-fill-mode: both;
+}
+::view-transition-image-pair(slice-1) { animation-delay: 45ms; }
+::view-transition-image-pair(slice-2) { animation-delay: 90ms; }
+::view-transition-image-pair(slice-3) { animation-delay: 135ms; }
+::view-transition-image-pair(slice-4) { animation-delay: 180ms; }
+/* corners: square in the card, 8px in the filmstrip frame */
+html[data-vt-to="post"]::view-transition-image-pair(slice-0), html[data-vt-to="post"]::view-transition-image-pair(slice-1),
+html[data-vt-to="post"]::view-transition-image-pair(slice-2), html[data-vt-to="post"]::view-transition-image-pair(slice-3),
+html[data-vt-to="post"]::view-transition-image-pair(slice-4) { animation-name: vtRoundIn; }
+html[data-vt-to="home"]::view-transition-image-pair(slice-0), html[data-vt-to="home"]::view-transition-image-pair(slice-1),
+html[data-vt-to="home"]::view-transition-image-pair(slice-2), html[data-vt-to="home"]::view-transition-image-pair(slice-3),
+html[data-vt-to="home"]::view-transition-image-pair(slice-4) { animation-name: vtRoundOut; }
+@keyframes vtRoundIn { from { border-radius: 0; } to { border-radius: 8px; } }
+@keyframes vtRoundOut { from { border-radius: 8px; } to { border-radius: 0; } }
+::view-transition-old(slice-0), ::view-transition-old(slice-1), ::view-transition-old(slice-2),
+::view-transition-old(slice-3), ::view-transition-old(slice-4),
+::view-transition-new(slice-0), ::view-transition-new(slice-1), ::view-transition-new(slice-2),
+::view-transition-new(slice-3), ::view-transition-new(slice-4) {
+  animation: none !important; opacity: 1 !important; mix-blend-mode: normal;
+  position: absolute; left: 0; top: 50%; width: 100%; height: auto; transform: translateY(-50%);
+  object-fit: fill;
+}
+/* The leaf cursor is its own group, drawn on top, with no UA animation:
+   cursor.ts moves the group every frame from the live pointer position. */
+::view-transition-group(leaf) { animation: none !important; z-index: 1000; }
+::view-transition-old(leaf) { display: none; }
+::view-transition-new(leaf) { animation: none !important; opacity: 1 !important; mix-blend-mode: normal; }
+::view-transition-old(root), ::view-transition-new(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*), ::view-transition-new(*) { animation-duration: 0.2s; animation-delay: 0ms; }
+}
+
+/* ---------- Fullscreen media viewer ---------- */
+.lb { position: fixed; inset: 0; z-index: 150; }
+.lb-scrim {
+  position: absolute; inset: 0; background: color-mix(in srgb, #14100a 62%, rgba(var(--accrgb), .18));
+  opacity: 0; transition: opacity var(--dur, .46s) ease; cursor: zoom-out;
+}
+.lb[data-open] .lb-scrim { opacity: 1; }
+.lb-media {
+  position: fixed; box-sizing: border-box; overflow: hidden;
+  transform-origin: 50% 50%; will-change: transform; cursor: zoom-out;
+}
+.lb-media img, .lb-media video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.lb-close {
+  position: fixed; top: 22px; right: 22px; width: 40px; height: 40px; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, .14); color: #fff; font-size: 15px; cursor: pointer;
+  display: grid; place-items: center; opacity: 0; transition: opacity var(--dur, .46s) ease, background .2s;
+}
+.lb-close:hover { background: rgba(255, 255, 255, .28); }
+.lb-cap {
+  position: fixed; left: 50%; transform: translateX(-50%); max-width: min(80vw, 640px); text-align: center;
+  font: 12.5px/1.5 var(--font-sans); color: rgba(255, 255, 255, .8);
+  opacity: 0; transition: opacity var(--dur, .46s) ease .12s;
+}
+.lb[data-open] .lb-close, .lb[data-open] .lb-cap { opacity: 1; }
+
+/* ---------- Shared keyframes ---------- */
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes shadowPulse { 0%, 100% { transform: scaleX(1); opacity: .5; } 50% { transform: scaleX(.86); opacity: .35; } }
+@keyframes swayLeaf { 0%, 100% { transform: rotate(-7deg) translateY(0); } 50% { transform: rotate(7deg) translateY(-2px); } }
+@keyframes leafSpin {
+  0% { transform: rotate(-7deg) scale(1); } 25% { transform: rotate(83deg) scale(1.2); }
+  50% { transform: rotate(173deg) scale(1.3); } 75% { transform: rotate(263deg) scale(1.2); }
+  100% { transform: rotate(353deg) scale(1); }
+}
+
+/* ---------- Utilities ---------- */
+.press {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  border-top: 1px solid rgba(var(--inkrgb), .08); margin-top: 22px; padding-top: 16px;
+}
+.press-label { font: 13px var(--font-sans); color: rgba(var(--inkrgb), .45); }
+.press-links { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+.press-links a {
+  display: flex; align-items: center; gap: 8px; font: 500 13.5px var(--font-sans);
+  color: var(--ink); text-decoration: none; transition: color .2s;
+}
+.press-links a:hover { color: var(--acc); }
+.press-links a .ext { font-size: 11px; color: rgba(var(--inkrgb), .4); }
+
+.link-u {
+  color: var(--ink); text-decoration: none; border-bottom: 2px solid rgba(var(--accrgb), .4);
+  padding-bottom: 1px; transition: border-color .2s;
+}
+.link-u:hover { color: var(--ink); border-bottom-color: var(--acc); }
+
+.placeholder {
+  border-radius: 12px; border: 1.5px solid var(--line);
+  background: repeating-linear-gradient(45deg, var(--ph1), var(--ph1) 10px, var(--ph2) 10px, var(--ph2) 20px);
+  display: grid; place-items: center; text-align: center;
+  font: 12px var(--font-mono); color: var(--t4);
+}

@@ -1,0 +1,51 @@
+---
+/* Case-study hero: five filmstrip frames (the morph target of the home
+   card's slices) with a glowing playhead and countdown timecode that sweep
+   on their own and follow the cursor on hover. */
+interface Props { thumb: string }
+const { thumb } = Astro.props;
+const frames = [0, 1, 2, 3, 4];
+---
+<div id="heroBand" class="band">
+  <div id="heroStrip" class="strip">
+    {frames.map((i) => (
+      <div class="frH">
+        <div class="img" transition:name={`slice-${i}`} style={`background-image:url(${thumb});background-position:${i * 25}% 50%`}></div>
+        <div class="dimH"></div>
+      </div>
+    ))}
+  </div>
+  <div id="phH" class="playhead"></div>
+  <div id="tcH" class="timecode">0:00</div>
+</div>
+
+<style>
+  .band {
+    --fw: min(136px, calc((100vw - 40px - 4 * 12px) / 5));
+    --fh: calc(var(--fw) * 224 / 136);
+    position: relative; height: calc(var(--fh) + 148px);
+    background: radial-gradient(70% 120% at 50% -10%, rgba(var(--accrgb), .13), rgba(var(--accrgb), .03) 62%, transparent 100%), var(--bg);
+  }
+  .strip { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; }
+  .frH {
+    width: var(--fw); height: var(--fh); border-radius: 12px; overflow: hidden; position: relative; background: #fff;
+    box-shadow: 0 6px 14px rgba(43,43,34,.10), 0 20px 44px rgba(60,40,20,.13);
+    transition: transform .3s cubic-bezier(.2,1.3,.4,1), box-shadow .3s;
+  }
+  .frH .img { position: absolute; inset: 6px; border-radius: 8px; background-size: 500% auto; background-repeat: no-repeat; pointer-events: none; }
+  /* Dim starts invisible so it can't pop in when the morph snapshot lifts;
+     it eases to its resting darkness once the transition has settled. */
+  .dimH { position: absolute; inset: 0; background: rgba(43,43,34,.28); opacity: 0; transition: opacity .6s ease; pointer-events: none; }
+  .band[data-live] .dimH { opacity: 1; }
+  .playhead {
+    position: absolute; top: 62px; width: 3px; height: calc(var(--fh) + 50px); border-radius: 2px; background: var(--acc);
+    box-shadow: 0 0 14px rgba(var(--accrgb), .55); pointer-events: none; z-index: 6; left: 50%;
+    opacity: 0; transition: opacity .45s ease;
+  }
+  .band[data-live] .playhead, .band[data-live] .timecode { opacity: 1; }
+  .timecode {
+    position: absolute; top: 34px; left: 50%; font: 500 12px var(--font-mono); color: var(--acc);
+    transform: translateX(-50%); pointer-events: none; z-index: 6;
+    opacity: 0; transition: opacity .45s ease;
+  }
+</style>

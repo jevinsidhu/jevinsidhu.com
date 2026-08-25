@@ -1,0 +1,66 @@
+---
+/* The pilot viewer, penciled in. A wireframe of the actual pilot screen
+   (swipe-up viewer, "2 of 10", captions, +/−/✂︎, Add) draws itself in
+   stroke by stroke when scrolled into view, picks up a few pencil
+   annotations, and stays. Decorative; the article copy never lives here.
+   Sequencing is pure CSS keyed off [data-run] (set in gadgets.ts). */
+---
+<figure class="sketch" data-sketch>
+  <svg viewBox="0 0 640 440" role="img" aria-label="Pencil wireframe of the pilot Clips viewer being drawn, then erased">
+    <g class="main">
+      <!-- phone -->
+      <rect class="dr" style="--d:.15s" x="220" y="20" width="200" height="404" rx="24" pathLength="1" />
+      <path class="dr" style="--d:.5s" d="M300 40 h40" pathLength="1" />
+      <!-- ✕ + counter -->
+      <path class="dr" style="--d:.6s" d="M242 58 l10 10 M252 58 l-10 10" pathLength="1" />
+      <text class="tx" style="--d:.7s" x="320" y="67" text-anchor="middle">2 of 10</text>
+      <!-- video placeholder with cross + captions -->
+      <rect class="dr" style="--d:.85s" x="238" y="150" width="164" height="98" rx="3" pathLength="1" />
+      <path class="dr" style="--d:1s" d="M238 150 L402 248" pathLength="1" />
+      <path class="dr" style="--d:1.1s" d="M402 150 L238 248" pathLength="1" />
+      <path class="dr" style="--d:1.2s" d="M262 262 q22 3 44 0 t50 0" pathLength="1" />
+      <path class="dr" style="--d:1.28s" d="M284 274 q18 2 36 0 t34 0" pathLength="1" />
+      <!-- source attribution -->
+      <rect class="dr" style="--d:1.38s" x="238" y="316" width="24" height="24" rx="5" pathLength="1" />
+      <path class="dr" style="--d:1.44s" d="M238 316 l24 24" pathLength="1" />
+      <path class="dr" style="--d:1.5s" d="M272 324 q30 2 60 0 t36 0" pathLength="1" />
+      <path class="dr" style="--d:1.56s" d="M272 336 h70" pathLength="1" />
+      <!-- controls: pause · time · +/−/✂ · Add -->
+      <path class="dr" style="--d:1.72s" d="M242 381 q10 3 20 0 t16 0" pathLength="1" />
+      <circle class="dr" style="--d:1.78s" cx="308" cy="380" r="11" pathLength="1" />
+      <circle class="dr" style="--d:1.86s" cx="333" cy="380" r="11" pathLength="1" />
+      <circle class="dr" style="--d:1.94s" cx="358" cy="380" r="11" pathLength="1" />
+      <rect class="dr" style="--d:2.12s" x="374" y="369" width="32" height="22" rx="11" pathLength="1" />
+      <!-- pencil annotations -->
+      <text class="tx an" style="--d:2.4s" x="34" y="120">swipe ↑ for</text>
+      <text class="tx an" style="--d:2.4s" x="34" y="135">the next one</text>
+      <path class="dr" style="--d:2.5s" d="M118 142 q52 24 92 52 m0 0 l-13 -4 m13 4 l-2 -13" pathLength="1" />
+      <text class="tx an" style="--d:2.7s" x="452" y="160">an LLM suggests</text>
+      <text class="tx an" style="--d:2.7s" x="452" y="175">moments from a video</text>
+      <path class="dr" style="--d:2.8s" d="M448 178 q-22 16 -50 22 m0 0 l14 0 m-14 0 l9 -10" pathLength="1" />
+      <text class="tx an" style="--d:3s" x="448" y="318">the creator</text>
+      <text class="tx an" style="--d:3s" x="448" y="333">makes the call</text>
+      <path class="dr" style="--d:3.1s" d="M474 340 q-14 26 -50 36 m0 0 l14 1 m-14 -1 l10 -10" pathLength="1" />
+    </g>
+  </svg>
+</figure>
+
+<style>
+  .sketch { margin: 30px 0 0; position: relative; --pencil: color-mix(in srgb, color-mix(in srgb, var(--acc) 40%, var(--ink)) 70%, transparent); }
+  svg { display: block; width: 100%; height: auto; }
+
+  .dr { fill: none; stroke: var(--pencil); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; stroke-dashoffset: 1.02; }
+  .tx { opacity: 0; font: 12px var(--font-mono); fill: var(--pencil); }
+  .tx.sm { font-size: 10px; }
+  .tx.an { font-style: italic; }
+  [data-run] .dr { animation: skdraw .55s cubic-bezier(.45, 0, .3, 1) forwards; animation-delay: var(--d, 0s); }
+  [data-run] .tx { animation: skfade .4s ease forwards; animation-delay: var(--d, 0s); }
+  @keyframes skdraw { to { stroke-dashoffset: 0; } }
+  @keyframes skfade { to { opacity: 1; } }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .dr, [data-run] .dr { animation: none; stroke-dashoffset: 0; }
+    .tx, [data-run] .tx { animation: none; opacity: 1; }
+  }
+</style>

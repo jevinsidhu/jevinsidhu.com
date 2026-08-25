@@ -1,0 +1,21 @@
+---
+/* A handwritten-feeling margin note, tucked to the right of the column on
+   wide screens and revealed as it scrolls into view. Hidden under 1180px. */
+interface Props { top?: number; tone?: 'warm' | 'cool'; tilt?: number }
+const { top = 70, tone = 'warm', tilt = -2 } = Astro.props;
+---
+<aside class="quip" style={`top:${top}px`}>
+  <div data-mn class={`mn ${tone}`} style={`--tilt:${tilt}deg`}><slot /></div>
+</aside>
+
+<style>
+  .quip { position: absolute; left: calc(100% + 48px); width: 200px; }
+  .mn {
+    font: 12px/1.65 var(--font-mono); transform: rotate(var(--tilt)) translateY(14px); opacity: 0;
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .mn.warm { color: #8a6540; }
+  .mn.cool { color: #3a66b8; }
+  .mn[data-shown] { opacity: 1; transform: rotate(var(--tilt)); }
+  @media (max-width: 1180px) { .quip { display: none; } }
+</style>

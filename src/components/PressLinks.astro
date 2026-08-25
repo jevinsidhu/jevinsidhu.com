@@ -1,0 +1,25 @@
+---
+interface Props {
+  press: { name: string; url: string; icon: 'techcrunch' | 'verge' }[];
+  class?: string;
+}
+const { press, class: cls = '' } = Astro.props;
+---
+{press.length > 0 && (
+  <div class={`press ${cls}`}>
+    <div class="press-label">Press</div>
+    <div class="press-links">
+      {press.map((p) => (
+        <a href={p.url} target="_blank" rel="noopener">
+          {p.icon === 'techcrunch' && (
+            <svg width="15" height="15" viewBox="0 0 24 24" style="flex:none"><rect width="24" height="24" rx="4" fill="#0A9E01"/><path d="M4 7h9v3.4H9.7V17H7.3v-6.6H4zM14 7h6v3.4h-3.4v3.2H20V17h-6z" fill="#fff"/></svg>
+          )}
+          {p.icon === 'verge' && (
+            <svg width="15" height="15" viewBox="0 0 24 24" style="flex:none"><path d="M3 3h6l4 9 1.5-4L12 3h9L12 21z" fill="#5200ff"/></svg>
+          )}
+          <span>{p.name}</span><span class="ext">↗</span>
+        </a>
+      ))}
+    </div>
+  </div>
+)}

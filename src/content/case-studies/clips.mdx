@@ -1,0 +1,184 @@
+---
+title: Building Clips with Creators in Control
+subtitle: Building Patreon's first AI product for creators
+blurb: Creators invest in making great long-form videos. Clips packages that work into moments they can share without giving up creative control.
+thumb: /media/clips-thumb.jpg
+og: /og/clips.png
+date: 2026-07-06
+press:
+  - name: TechCrunch
+    url: https://techcrunch.com/2026/08/20/patreon-launches-30-new-creator-features-including-short-form-clips-and-revamped-discovery/
+    icon: techcrunch
+  - name: The Verge
+    url: https://www.theverge.com/tech/983156/patreon-update-roadmap-algorithm-changes
+    icon: verge
+toc:
+  - { id: s0, label: Intro }
+  - { id: s1, label: Prototype }
+  - { id: s2, label: Authorship }
+  - { id: s3, label: Workflow }
+  - { id: s4, label: Feedback }
+  - { id: s5, label: Foundations }
+  - { id: s6, label: Craft }
+  - { id: s7, label: Future }
+  - { id: s8, label: Conclusion }
+---
+import Section from '../../components/Section.astro';
+import Figure from '../../components/Figure.astro';
+import Row from '../../components/Row.astro';
+import Facets from '../../components/Facets.astro';
+import Player from '../../components/Player.astro';
+import Phones from '../../components/Phones.astro';
+import Detail from '../../components/Detail.astro';
+import ProtoSketch from '../../components/ProtoSketch.astro';
+import Shelf from '../../components/Shelf.astro';
+import SignDoodle from '../../components/SignDoodle.astro';
+import LensDoodle from '../../components/LensDoodle.astro';
+import ReshapeDoodle from '../../components/ReshapeDoodle.astro';
+import RootsDoodle from '../../components/RootsDoodle.astro';
+import GemDoodle from '../../components/GemDoodle.astro';
+
+<p class="lede">Creators invest in making great long-form videos. Clips packages that work into moments they can share without giving up creative control. In four months, I drove the delivery of Clips end-to-end. This spanned product thinking, design, backend and iOS engineering, large language model workflows, creator research, and launch storytelling. As the product evolved, several principles defined the work. This blog takes a tour through each!</p>
+
+<Player src="/media/clips/walkthrough.mp4" poster="/media/clips/walkthrough-poster.jpg" caption="Voiceover demo recorded for creators in our ambassador program" />
+
+<Row>
+  <Figure src="/media/clips/entry-ready.jpg" grow={1.26} alt="Clips are ready to review — a card surfaced over the home feed" caption="Clips surfaced in the feed, ready to review" />
+  <Figure src="/media/clips/entry-profile.jpg" grow={1.96} alt="A Clips review card on the creator's profile page" caption="The Clips card on a creator's own page" />
+</Row>
+
+<Shelf items={[
+  { src: '/media/clips/wild-1.jpg', alt: "EnjoyingArt's Quip with a watercolor Clip" },
+  { src: '/media/clips/wild-2.jpg', alt: "Ginny Di's Quip with a Clip from her Felicia Day interview" },
+  { src: '/media/clips/wild-3.jpg', alt: "Knit Graffiti's Quip with a Clip from a recorded live" },
+  { src: '/media/clips/wild-4.jpg', alt: "Ben & David's Quip with a Clip from a Disneyland ride" },
+  { src: '/media/clips/wild-5.jpg', alt: "Patrick Visser's Quip with a watercolour Clip of Mt Cook" },
+  { src: '/media/clips/wild-6.jpg', alt: "Tales from the Stinky Dragon's Quip with a Baldur's Gate 3 Clip" },
+  { src: '/media/clips/wild-7.jpg', alt: "JonathanOst Guitar's Quip with a Clip on practicing triads" },
+  { src: '/media/clips/wild-8.jpg', alt: "Paint Club's Quip with a sketchbook Clip" },
+  { src: '/media/clips/wild-9.jpg', alt: "Bliss Foster's Quip with a Clip about Alexander McQueen" },
+]} />
+
+<Section id="s1" principle={1} title="Build prototypes I could unwind">
+  <p>There was urgency to learn quickly, while avoiding engineering decisions that would be painful to reverse. I created a prototyped implementation that would not scale, but would allow me to test the product hypothesis with a small cohort: suggestions from an LLM could help creators turn long-form video into Clips without taking creative control away from them.</p>
+  <p>Code is cheap, but data and APIs are expensive. A polluted database, a mobile endpoint a team has to support forever, or a contract we depend on is hard to rollback. I avoided durable client contracts, skipped unnecessary new enums, stood up resources we could tear down, and kept prototype data out of the main database. I kept production rigor while delaying permanent commitments until the product had earned them. There were zero incidents associated with this work and all prototype code was cleaned up before the Alpha rollout.</p>
+  <ProtoSketch />
+</Section>
+
+<Section id="s2" principle={2} title="Leave authorship with the creator">
+  <p>Creators were open to tools that saved time, but were concerned about ones that took over creative judgment and used their work in unclear ways. That meant Clips could handle search and packaging, but creators must make the final publishing decision. This naturally shaped the product: Clips finds promising moments, makes them easy to review, and connects the output to Patreon’s existing creation and distribution surfaces.</p>
+  <p>The core product decision was to make Clips feel like a natural extension of Quips, Patreon’s lightweight public posts that appear in the Home feed for existing fans and potential new audiences. Creators already understood the Quip composer as a place to make a lightweight post in the feed. They also understood you could attach artifacts from Patreon, like quoting a post or another Quip. Clips introduces highlights from their videos as another artifact. These are ultimately the creators’, so I also built a flow to download Clips locally.</p>
+  <Row>
+    <Figure src="/media/clips/downloads.mp4" poster="/media/clips/downloads-poster.jpg" caption="Clips can be attatched to a Quip, or downloaded locally" />
+  </Row>
+  <p>Suggestions stay private until a creator chose to post. Creators review and add their own caption and nothing is published automatically–a “good” clip is subjective and the creator knows their audience best.</p>
+  <p>These principles were embed into the data model. Clips are private intervals. Only when a creator chooses a suggestion is the Clip created as a media asset that can be attached to a Quip or downloaded. This way, I avoided creating unused assets and unnecessary video processing until required.</p>
+  <Row>
+    <Figure src="/media/clips/quip-screenshot.jpg" alt="A Quip in the Patreon feed with a Clip attached" caption="One of the first Quips with a Clip posted during the production rollout" />
+    <Figure src="/media/clips/quip-comments.jpg" alt="Fan comments on a Quip with a Clip" caption="Fans reacting to an early Quip with a Clip" />
+  </Row>
+  <Figure src="/media/clips/testimonial.jpg" alt="A creator's email: Clips is one of the most valuable new tools Patreon has provided to us this year" caption="A creator's early-access feedback email" />
+  <SignDoodle slot="note" top={720} />
+</Section>
+
+<Section id="s3" principle={3} title="Meet creators in their workflow">
+  <p>Within a month, I put Clips into a pilot with a small cohort of creators. I ran creator calls and understood that suggested Clips could feel like a natural next step after their publishing flow.</p>
+  <h4>Leveraging push notifications</h4>
+  <p>Clips meets creators in their workflow. After publishing a video, they received a push notification that deep links directly into the Clips library. The notification brings back creators when the system has something useful to show. If the pipeline failed, the creator can still publish; they just won’t receive Clip suggestions for that video.</p>
+  <Phones items={[{ src: '/media/clips/notification.mp4', poster: '/media/clips/notification-poster.jpg' }]} />
+  <h4>What I measured</h4>
+  <p>For the pilot, the success criteria was how many creators post their second Clip. It meant the creator found enough value to come back, review another suggestion, make an editorial decision, and share again. I also tracked supporting signals like watch and engagement on Quips with Clips, notification click-through rate, and qualitative feedback on Clip quality.</p>
+  <p>By the end of the pilot, all creators who responded to our emails reached the north-star behavior of Quipping a Clip more than once. Quips with Clips performed better than regular quoted-post Quips in early pilot comparisons, and creators shared that they wanted to incorporate Clips into their regular posting workflow.</p>
+  <p>In the creator debriefs, pilot creators asked to keep Clips on after the trial. One creator gave the cleanest product-market-fit quote of the project: <span class="pmf" data-sketch>“I wasn’t testing it, I was just using it.”</span></p>
+  <LensDoodle slot="note" top={1280} />
+</Section>
+
+<Section id="s4" principle={4} title="Let creator feedback reshape the product">
+  <ReshapeDoodle slot="note" top={920} />
+  <p>Feedback moved the interface away from a swipe-up feed of videos. Creators wanted a library organized around source posts, which meant the API needed to expose source posts, per-post generation state, and intervals grouped by video. APIs are meant to be flexible and not just a 1:1 representative of the database layer. I kept the swipe-up viewer for quickly moving through suggestions after a creator taps into a Clip, but made the entry point feel more like a library.</p>
+  <p>Every creator wanted review and editing before anything went live. One creator said even a millisecond off on the entry or exit point mattered, so I added pinch-to-zoom functionality for more granular trim control.</p>
+  <Figure src="/media/clips/zoom.mp4" poster="/media/clips/zoom-poster.jpg" caption="Creators needed granular editing of the start and end time, so I added pinch-to-zoom on the filmstrip" />
+  <p>Creator feedback led to a simpler interface. Creators used thumbs down when a suggestion was of low quality. However, the thumbs up was rarely used. Instead, the “Add” action showed positive intent. I removed the thumbs up button, the scissors icon became a “Trim” label, and timestamp ranges became a negative countdown. I also introduced a condensed attribution to the source post. The positive feedback from the pilot gave us enough confidence to productionize.</p>
+  <Phones items={[{ src: '/media/clips/pilot.mp4', poster: '/media/clips/pilot-poster.jpg', label: 'The pilot was a lot less polished than the final version, but was an invaluable learning tool. For example, there was no library interface at first. Instead, it dropped you straight into the swipe-up viewer. Based on feedback, I iterated. Inside the viewer, the biggest design learning was simplify - less, but better.' }]} />
+</Section>
+
+<Section id="s5" principle={5} title="Build reusable foundations that scale">
+  <RootsDoodle slot="note" top={230} />
+  <p>After the pilot, I cleaned up the prototype path so Clips had one production reference in our repos. The project went through the detail-oriented launch process Patreon expects for any feature. I held engineering reviews and a product risk review. I also participated in design crits. Before launch, I created runbooks, dashboards for observability and a plan for experimentation and rollout.</p>
+  <p>The production rewrite enabled me to build foundations beyond Clips. The backend models Clips as intervals from a source post so Clips can show up in other product surfaces. Chapters are an extension since they use titles and intervals, with the added constraint their intervals should not overlap. I wrote an LLM gateway for a typed, observable route to call multiple providers, track cost and latency by call site, validate structured outputs, and test prompt/model pairs against a golden set of videos. These foundations are now being used for roadmap work beyond Clips. The focus of my work was writing a long-running, reliable pipeline that kept LLM calls out of the request path and maintained a list of auto-retrying failures. Each attempt writes to a ledger for bookkeeping. The remaining work was operational. I considered task timeouts and created a reaper for stuck generations. Clips become ready when interval rows are written. If Clip thumbnail generation is slow or fails, clients can fall back to the post thumbnail and still let the creator review the Clips.</p>
+  <p>In June, about a month after the pilot, Patreon introduced Clips in alpha as iOS workflow for eligible videos. Creators can browse suggested moments, trim them, and attach them to a Quip.</p>
+  <h3>Evaluations</h3>
+  <p>For evaluations, Thomas Liu, a machine learning engineer at Patreon, had prototyped a workflow. I built on that foundation and turned it into a formal evaluation tool. I ran the pipeline hundreds of times with different creator archetypes. The evaluation tool leveraged the LLM gateway I wrote. It let me compare outputs and improve cost or latency. I adjusted the prompts to avoid filler starts or mid-thought endings, missing context, and titles that didn’t summarize well.</p>
+  <p>As Clips moved toward a wider rollout, feedback became part of the system. Each Clip can collect structured feedback and optional comments.</p>
+  <Figure src="/media/clips/evals-compare.jpg" alt="Evaluation output: control and variant clip suggestions compared side by side with scores" />
+  <Figure src="/media/clips/eval-tool.mp4" poster="/media/clips/eval-tool-poster.jpg" />
+</Section>
+
+<Section id="s6" principle={6} title="Earn trust through the small details">
+  <GemDoodle slot="note" top={200} />
+  <p>I recently read Josh Puckett’s <a href="https://www.interfacecraft.dev/">Interface Craft</a>, where he writes about Facets of Quality: external characteristics you want people to experience when using your product.</p>
+  <p>For Clips, my facets were:</p>
+  <Facets items={[
+    { title: 'Playful', desc: 'Clips should feel light and satisfying to explore.' },
+    { title: 'Precise', desc: 'Clips should feel editorially trustworthy.' },
+    { title: 'Quietly useful', desc: 'Clips should save creators time and the feature should not be the main character.' },
+    { title: 'Native', desc: 'Clips should feel like it belongs in Patreon’s creation workflow.' },
+  ]} />
+  <Detail n={1} title="Seen state entry point animation">
+    <p>If you haven’t seen this animation or your Clips yet, this will fire upon open the Quip composer to let you know there are new Clips awaiting your review.</p>
+    <Phones slot="media" items={[{ src: '/media/clips/seen-anim.mp4', poster: '/media/clips/seen-anim-poster.jpg' }]} />
+  </Detail>
+  <Detail n={2} title="Revising the Quip Composer" wide>
+    <p>A product designer, Nathan Ulrich, and I worked together to revise the Quip composer. This project consolidated actions into a bottom toolbar, made disabled states clearer, reduced the visual weight of the old media buttons, and gave Clips a durable entry point. The new treatment ran as an experiment and was directionally positive: total posts and text-only Quips increased and image and video Quips stayed neutral. Instead of simply adding a Clip entry point to the existing composer, we improved the overall craft of the surface.</p>
+    <Phones slot="media" items={[
+      { src: '/media/clips/entry-old.mp4', poster: '/media/clips/entry-old-poster.jpg', label: 'Before' },
+      { src: '/media/clips/entry-new.mp4', poster: '/media/clips/entry-new-poster.jpg', label: 'After' },
+    ]} />
+  </Detail>
+  <Detail n={3} title="New user experience" wide>
+    <p>I worked with another product designer, Justin Luo, to create the new user experience.</p>
+    <Phones slot="media" items={[{ src: '/media/clips/nux.mp4', poster: '/media/clips/nux-poster.jpg' }]} />
+  </Detail>
+  <Detail n={4} title="Initial loading state" flip>
+    <p>In most cases, creators will publish a post and be prompted via notification to explore new clips. At this point, the view will be populated and once you have clips, the library will always show them. However, this screen may be their first impression of this feature, so I spent some time polishing here.</p>
+    <Phones slot="media" items={[{ src: '/media/clips/loading.mp4', poster: '/media/clips/loading-poster.jpg' }]} />
+    <Fragment slot="below">
+      <p>These were earlier explorations I had.</p>
+      <Phones size="sm" items={[
+        { src: '/media/clips/explore-1.mp4', poster: '/media/clips/explore-1-poster.jpg', portrait: true },
+        { src: '/media/clips/explore-2.mp4', poster: '/media/clips/explore-2-poster.jpg', portrait: true },
+      ]} />
+    </Fragment>
+  </Detail>
+  <Detail n={5} title="Download states" wide>
+    <p>While the primary action is attaching to a Quip, it’s important creators can take their work off-platform by downloading a Clip.</p>
+    <Phones slot="media" items={[
+      { src: '/media/clips/download-states.mp4', poster: '/media/clips/download-states-poster.jpg', label: 'Exploration' },
+      { src: '/media/clips/downloads.mp4', poster: '/media/clips/downloads-poster.jpg', label: 'Final' },
+    ]} />
+  </Detail>
+  <Detail n={6} title="Filter adjacent rows">
+    <p>Adjacent rows morph corner radii.</p>
+    <Phones slot="media" items={[{ src: '/media/clips/filter.mp4', poster: '/media/clips/filter-poster.jpg' }]} />
+  </Detail>
+</Section>
+
+<Section id="s7" title="Future iterations">
+  <h3>More creator controls</h3>
+  <p>I want to continue to empower creators with more tools so they are in control. Examples include burnt-in captions with fun styles, selection of text colors, aspect ratios, and the ability to edit captions.</p>
+  <Figure src="/media/clips/controls.jpg" alt="Mockups of additional creator controls: caption styles, text colors, aspect ratios" />
+  <h3>Entry points</h3>
+  <p>From the Creator Ambassador Program chat, one piece of feedback I received was: <span class="pmf" data-sketch>“It’s a beautiful feature hidden away.”</span> That feedback encouraged me to explore other entry points. Featured Clips and the library flows are useful atoms. The feature can appear when useful.</p>
+  <Row>
+    <Figure src="/media/clips/entry-ready.jpg" grow={1.26} alt="Clips are ready to review — a card surfaced over the home feed" />
+    <Figure src="/media/clips/entry-profile.jpg" grow={1.96} alt="A Clips review card on the creator's profile page" />
+  </Row>
+</Section>
+
+<Section id="s8" title="Conclusion">
+  <p>One of Patreon’s core values is to “Put Creators First”. Clips works because it finds useful moments, lets creators’ adjust it, and leaves the decision to post in their hands.</p>
+  <p>Thank you to the entire team at Patreon – a special shoutout to Ann Yang, Cat Ku, Jason Byttow, Lois Yang, and Thomas Liu who envisioned how we may surface clips in the product late last year, Kanika Singh Mora and Mary Ellen Funke for helping run the pilot, Alexander Richards, Bhavik Singh, Haley Block, Sam Yam, and Shannon Ma for supporting this workstream, and Justin Luo, Nathan Ulrich, Sharon Yu who critiqued my design work.</p>
+  <div class="author">
+    <p><em>Jevin Sidhu is a software engineer at Patreon. Get to know him through some of his favorite creators like <a href="https://www.patreon.com/cw/Middlebrow">Middlebrow</a>, <a href="https://www.patreon.com/cw/thecuttingroomfloor">The Cutting Room Floor</a>, <a href="https://www.patreon.com/cw/Percish">Percish</a>, <a href="https://www.patreon.com/cw/ThinkingBasketball">Ben Taylor</a>, <a href="https://www.patreon.com/c/filmcrithulk/home">Film Crit Hulk</a>, <a href="https://www.patreon.com/c/spiritedman/home">Van Neistat</a>, <a href="https://www.patreon.com/cw/noclip">/noclip</a>, <a href="https://www.patreon.com/cw/meganwang">Megan Wang</a>, <a href="https://www.patreon.com/cw/fplancroissant">Floor Plan Croissant</a>, and <a href="https://www.patreon.com/cw/RandomOrderShow">Random Order Show</a>.</em></p>
+  </div>
+</Section>

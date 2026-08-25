@@ -1,0 +1,10 @@
+---
+interface Props { align?: 'start' | 'stretch' }
+const { align = 'start' } = Astro.props;
+---
+<div class="row" style={`align-items:${align === 'stretch' ? 'stretch' : 'flex-start'}`}><slot /></div>
+<style>
+  .row { display: flex; gap: 20px; }
+  .row :global(figure) { margin-top: 26px; }
+  @media (max-width: 640px) { .row { flex-direction: column; gap: 0; } }
+</style>

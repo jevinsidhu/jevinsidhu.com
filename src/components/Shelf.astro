@@ -1,0 +1,66 @@
+---
+/* "Spotted in the wild": a full-bleed filmstrip shelf of real creator posts
+   that auto-scrolls in a seamless loop (duplicated set; initShelf measures
+   the loop width and paces the glide). Pauses on hover so cards can be
+   tapped into the lightbox. Reduced motion: a static scrollable row. */
+interface Props { items: { src: string; alt: string }[]; label?: string }
+const { items, label } = Astro.props;
+---
+<div class="shelf-wrap">
+  {label && <div class="shelf-label">{label}</div>}
+  <div class="shelf" data-shelf>
+    <div class="track">
+      <div class="set">
+        {items.map((it) => (
+          <figure class="card"><img src={it.src} alt={it.alt} loading="lazy" decoding="async" draggable="false" /></figure>
+        ))}
+      </div>
+      <div class="set" aria-hidden="true">
+        {items.map((it) => (
+          <figure class="card"><img src={it.src} alt="" loading="lazy" decoding="async" draggable="false" /></figure>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .shelf-wrap {
+    --sw: min(1100px, calc(100vw - 48px));
+    width: var(--sw);
+    margin: 72px calc((100% - var(--sw)) / 2) 0;
+  }
+  .shelf-label {
+    display: flex; align-items: baseline; justify-content: space-between;
+    font: 600 13px var(--font-sans); color: var(--t3); margin: 0 6px 14px;
+  }
+  .shelf-label .hint { font: 11px var(--font-mono); color: var(--t5); }
+  .shelf {
+    overflow: hidden; padding: 18px 0 12px;
+    mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent);
+  }
+  .track { display: flex; gap: 18px; width: max-content; animation: shelfloop var(--loopdur, 60s) linear infinite; }
+  .shelf:has(.card:hover) .track, :global(html[data-lb]) .track { animation-play-state: paused; }
+  .shelf[data-nohover] .track { animation-play-state: running; }
+  .set { display: flex; gap: 18px; align-items: flex-start; }
+  @keyframes shelfloop { to { transform: translateX(calc(-1 * var(--loopw, 50%))); } }
+  .card {
+    flex: none; margin: 0; width: 250px;
+    background: #fff; border: 1.5px solid var(--line); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(60, 40, 20, .12);
+    transition: transform .35s var(--ease-pop), box-shadow .35s;
+  }
+  .set .card:nth-child(odd) { transform: rotate(-1.4deg); }
+  .set .card:nth-child(even) { transform: rotate(1.3deg) translateY(6px); }
+  /* must out-rank the nth-child tilt rules (same specificity, later wins) */
+  .set .card:hover { transform: rotate(0) translateY(-5px); box-shadow: 0 20px 44px rgba(60, 40, 20, .18); }
+  .card img { display: block; width: 100%; height: auto; pointer-events: auto; }
+  @media (max-width: 640px) { .card { width: 210px; } .shelf { gap: 14px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .card, .set .card:nth-child(odd), .set .card:nth-child(even) { transform: none; transition: none; }
+    .track { animation: none; }
+    .shelf { overflow-x: auto; }
+    .set[aria-hidden] { display: none; }
+  }
+</style>

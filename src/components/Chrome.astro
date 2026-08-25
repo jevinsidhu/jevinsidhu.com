@@ -1,0 +1,97 @@
+---
+/* Persistent UI: leaf cursor, sound toggle, palette button + panel.
+   Rendered once in the layout with transition:persist so it survives
+   every navigation without re-mounting. */
+---
+
+<div id="chrome" transition:persist="chrome">
+  <div id="leafCur" aria-hidden="true"><div class="curInner"></div></div>
+  <div id="btnDock" aria-hidden="true"></div>
+
+  <button id="sndBtn" type="button" title="Toggle sound" aria-label="Toggle sound effects" aria-pressed="true">
+    <svg id="sndOnIc" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor"/><path d="M10.5 5.5a3.5 3.5 0 010 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M12.5 3.8a6 6 0 010 8.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <svg id="sndOffIc" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor"/><path d="M10.5 6l4 4M14.5 6l-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </button>
+
+  <button id="palBtn" type="button" title="Colors" aria-label="Choose color theme" aria-haspopup="true">
+    <span class="chip"></span>
+  </button>
+  <button id="topBtn" type="button" title="Back to top" aria-label="Scroll back to top">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 10 L8 5.5 L12.5 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div id="palPanel" role="menu" aria-label="Color themes"></div>
+</div>
+
+<script src="../scripts/chrome.ts"></script>
+
+<style>
+  #leafCur {
+    position: fixed; left: 0; top: 0; z-index: 200; pointer-events: none;
+    opacity: 0; transition: opacity .2s; will-change: transform;
+    view-transition-name: leaf; /* own group: never part of the root crossfade */
+  }
+  #leafCur .curInner { position: relative; transition: transform .22s cubic-bezier(.3,1.4,.4,1); transform-origin: 35% 25%; }
+  #leafCur :global(.curIdle) { animation: swayLeaf 2.6s ease-in-out infinite; }
+  #leafCur[data-state='hover'] .curInner { transform: scale(1.22) rotate(10deg); }
+  #leafCur[data-state='press'] .curInner { transform: scale(.78) rotate(-6deg) translateY(2px); }
+  #leafCur[data-state='hover'] :global(.curIdle), #leafCur[data-state='press'] :global(.curIdle) { animation-play-state: paused; }
+  #leafCur[data-spin='1'] :global([data-lf]) { animation: leafSpin .72s linear both; transform-origin: 50% 54%; will-change: transform; backface-visibility: hidden; }
+
+  #sndBtn, #palBtn, #topBtn {
+    position: fixed; bottom: 28px; z-index: 70; width: 44px; height: 44px; padding: 0;
+    border: 0; border-radius: 50%; display: grid; place-items: center; user-select: none; cursor: pointer;
+    color: rgba(var(--inkrgb), .55); background: rgba(var(--inkrgb), .06);
+    transition: color .2s, background .2s, transform .3s;
+  }
+  #sndBtn { left: 50px; }
+  #palBtn { left: 104px; }
+  #topBtn { right: 50px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .3s ease, transform .3s ease, color .2s, background .2s; }
+  #topBtn[data-show] { opacity: 1; pointer-events: auto; transform: none; }
+  #sndBtn:hover, #palBtn:hover, #topBtn:hover { color: var(--ink); background: rgba(var(--inkrgb), .12); }
+  #sndBtn svg, #topBtn svg { display: block; pointer-events: none; }
+  #palBtn .chip {
+    pointer-events: none; width: 15px; height: 20px; border-radius: 3.5px;
+    background: linear-gradient(158deg, color-mix(in srgb, var(--acc) 42%, transparent), color-mix(in srgb, var(--acc) 70%, rgba(0,0,0,.2)));
+    border: 1px solid color-mix(in srgb, var(--acc) 72%, rgba(0,0,0,.28));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+    transition: background .5s, border-color .5s;
+  }
+  #palPanel {
+    position: fixed; left: 32px; bottom: 84px; z-index: 75; width: 352px; height: 150px; border-radius: 20px;
+    /* No backdrop-filter: a blur re-renders every frame while the panel scales (shimmer).
+       A near-opaque tint of the page colour gives the same frosted read for free. */
+    background: color-mix(in srgb, var(--bg) 90%, rgba(var(--inkrgb), .35));
+    border: 1px solid rgba(var(--inkrgb), .1);
+    box-shadow: 0 2px 3px rgba(0,0,0,.08), 0 24px 54px rgba(20,15,8,.18);
+    opacity: 0; transform: scale(.4); transform-origin: 88px calc(100% + 44px); pointer-events: none;
+    transition: transform .38s cubic-bezier(.3,1.32,.35,1), opacity .28s; overflow: hidden;
+    will-change: transform, opacity; contain: layout paint;
+  }
+  /* On mobile the buttons sit in a small frosted dock so content scrolls
+     under a deliberate surface instead of colliding with bare icons. */
+  #btnDock { display: none; }
+  @media (max-width: 780px) {
+    #sndBtn, #palBtn, #btnDock, #palPanel { transition-property: transform, opacity, color, background; }
+    #sndBtn, #palBtn, #btnDock { transition: transform .35s ease, color .2s, background .2s; }
+    :global(html[data-chrome-hidden]) #sndBtn, :global(html[data-chrome-hidden]) #palBtn,
+    :global(html[data-chrome-hidden]) #btnDock, :global(html[data-chrome-hidden]) #palPanel { transform: translateY(130px); }
+    :global(html[data-chrome-hidden]) #topBtn { transform: translateY(130px) !important; }
+    #topBtn {
+      right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 52px; height: 52px;
+      background: color-mix(in srgb, var(--bg) 78%, transparent);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(var(--inkrgb), .12); box-shadow: 0 6px 24px rgba(60, 40, 20, .12);
+      transition: opacity .3s ease, transform .35s ease, color .2s, background .2s;
+    }
+    #sndBtn { left: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: transparent; }
+    #palBtn { left: 74px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: transparent; }
+    #btnDock {
+      display: block; position: fixed; z-index: 69;
+      left: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: 114px; height: 60px;
+      border-radius: 99px; background: color-mix(in srgb, var(--bg) 78%, transparent);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(var(--inkrgb), .12); box-shadow: 0 6px 24px rgba(60, 40, 20, .12);
+    }
+    #palPanel { left: 12px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); width: min(352px, calc(100vw - 24px)); transform-origin: 78px calc(100% + 44px); }
+  }
+</style>

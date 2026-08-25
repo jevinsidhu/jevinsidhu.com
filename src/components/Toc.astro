@@ -1,0 +1,63 @@
+---
+interface Props { items: { id: string; label: string }[] }
+const { items } = Astro.props;
+---
+<nav id="strip" class="toc" aria-label="Sections">
+  <div id="stripBg" class="bg"></div>
+  <div class="pill">
+    <div class="rail">
+      <div id="stripFill" class="fill"></div>
+      {items.map((it) => (
+        <button type="button" class="fr" data-target={it.id}><span class="frlab">{it.label}</span></button>
+      ))}
+    </div>
+  </div>
+</nav>
+
+<style>
+  .toc { position: sticky; top: 14px; z-index: 35; display: flex; justify-content: center; margin: 6px 0 0; pointer-events: none; }
+  .bg {
+    position: absolute; left: 50%; transform: translateX(-50%); width: 100vw; top: -14px; height: calc(100% + 42px);
+    background: linear-gradient(var(--bg) 55%, transparent); pointer-events: none; opacity: 0; transition: opacity .35s ease;
+  }
+  .toc[data-stuck='1'] .bg { opacity: 1; }
+  .pill {
+    position: relative; padding: 5px; border-radius: 99px;
+    background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--inkrgb), .1); box-shadow: 0 6px 24px rgba(60,40,20,.1); overflow: hidden; pointer-events: auto;
+    max-width: calc(100vw - 24px);
+  }
+  /* the labels scroll inside a rail; edge fades live on the rail so the
+     capsule itself stays solid */
+  .rail { position: relative; display: flex; align-items: center; gap: 2px; overflow-x: auto; scrollbar-width: none; border-radius: 99px; }
+  .rail::-webkit-scrollbar { display: none; }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(var(--accrgb), .14); pointer-events: none; z-index: 1; }
+  .fr {
+    position: relative; z-index: 2; padding: 7px 13px; border-radius: 99px; cursor: pointer; white-space: nowrap;
+    background: transparent; border: 0; transition: background .2s;
+  }
+  .fr:hover { background: rgba(var(--inkrgb), .06); }
+  .frlab { font: 12.5px var(--font-sans); color: rgba(var(--inkrgb), .5); transition: color .25s; pointer-events: none; }
+  .fr:hover .frlab, .fr[data-active] .frlab { color: var(--ink); }
+  .fr[data-active] .frlab { font-weight: 600; }
+  /* Scroll affordance when the pill overflows: fade the clipped edge(s).
+     post.ts sets data-fr / data-fl; the fade *amount* is an animatable
+     registered property, so edges ease in instead of blinking. */
+  @property --fadeL { syntax: '<length>'; inherits: false; initial-value: 0px; }
+  @property --fadeR { syntax: '<length>'; inherits: false; initial-value: 0px; }
+  .rail {
+    --fadeL: 0px; --fadeR: 0px;
+    transition: --fadeL .35s ease, --fadeR .35s ease;
+    mask-image: linear-gradient(90deg, transparent 0, #000 var(--fadeL), #000 calc(100% - var(--fadeR)), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fadeL), #000 calc(100% - var(--fadeR)), transparent 100%);
+  }
+  .rail[data-fl] { --fadeL: 44px; }
+  .rail[data-fr] { --fadeR: 44px; }
+  @media (max-width: 780px) {
+    /* stack under the fixed Back pill instead of overlapping it */
+    .toc { top: 58px; transition: transform .35s ease, opacity .3s ease; }
+    :global(html[data-chrome-hidden]) .toc { transform: translateY(-130px); opacity: 0; pointer-events: none; }
+    .bg { top: -58px; height: calc(100% + 86px); }
+    .fr { padding: 6px 10px; }
+  }
+</style>

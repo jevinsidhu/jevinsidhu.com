@@ -1,0 +1,47 @@
+---
+/* Margin doodle for "Earn trust through the small details": a penciled gem
+   whose facet lines draw in one by one — four facets of quality — then it
+   gets shined: little accent stars pop in all around the stone.
+   Runs once on scroll via the shared [data-sketch]/[data-run] machinery.
+   Hidden <1180px. */
+interface Props { top?: number }
+const { top = 200 } = Astro.props;
+---
+<aside class="doodle" style={`top:${top}px`} data-sketch aria-hidden="true">
+  <svg viewBox="0 0 150 120" width="150">
+    <!-- the stone, drawn loose -->
+    <path class="dr st" style="--d:.25s" pathLength="1"
+      d="M54 38 q 20.5 -3 41 1 q 6.5 6 10 13.5 q -13.5 21 -29.5 42.5 q -16.5 -21.5 -30.5 -43.5 q 4.5 -7 9.5 -13.8 l 1.5 -.5" />
+    <!-- facets, a little wobbly -->
+    <path class="dr" style="--d:1.05s" pathLength="1" d="M46 51.5 q 29 3 58 .5" />
+    <path class="dr" style="--d:1.3s" pathLength="1" d="M55 38.5 q 4 7 9.5 13.5" />
+    <path class="dr" style="--d:1.45s" pathLength="1" d="M94.5 39 q -4.5 6.5 -9 13" />
+    <path class="dr" style="--d:1.6s" pathLength="1" d="M65 52.5 q 4.5 21 10 42" />
+    <path class="dr" style="--d:1.75s" pathLength="1" d="M85 52 q -4.5 21 -9.5 42.5" />
+    <!-- the shine: stars all around the stone -->
+    <g class="glint" style="--d:2.15s"><path d="M48 16 v 12 M42 22 h 12 M44.5 18 l 7 8 M51.5 18 l -7 8" /></g>
+    <g class="glint" style="--d:2.35s"><path d="M110 24 v 9 M105.5 28.5 h 9" /></g>
+    <g class="glint" style="--d:2.5s"><path d="M124 56 v 10 M119 61 h 10 M121 58 l 6 6 M127 58 l -6 6" /></g>
+    <g class="glint" style="--d:2.65s"><path d="M27 46 v 8 M23 50 h 8" /></g>
+    <g class="glint" style="--d:2.8s"><path d="M108 86 v 8 M104 90 h 8" /></g>
+    <g class="glint" style="--d:2.95s"><path d="M38 88 v 6 M35 91 h 6" /></g>
+  </svg>
+</aside>
+
+<style>
+  .doodle { position: absolute; left: calc(100% + 44px); width: 160px; --pencil: color-mix(in srgb, color-mix(in srgb, var(--acc) 55%, var(--ink)) 64%, transparent); }
+  svg { display: block; overflow: visible; transform: rotate(-3deg); }
+  .dr { fill: none; stroke: var(--pencil); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; stroke-dashoffset: 1.02; }
+  .glint path { fill: none; stroke: color-mix(in srgb, var(--acc) 82%, var(--ink)); stroke-width: 2; stroke-linecap: round; }
+  .glint { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(.2) rotate(-20deg); }
+  [data-run] .dr { animation-name: skdraw; animation-duration: .5s; animation-timing-function: cubic-bezier(.45, 0, .3, 1); animation-fill-mode: forwards; animation-delay: var(--d, 0s); }
+  [data-run] .dr.st { animation-duration: .8s; }
+  [data-run] .glint { animation: glintpop .45s cubic-bezier(.3, 1.4, .4, 1) forwards; animation-delay: var(--d, 0s); }
+  @keyframes skdraw { to { stroke-dashoffset: 0; } }
+  @keyframes glintpop { to { opacity: 1; transform: scale(1) rotate(0); } }
+  @media (max-width: 1180px) { .doodle { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .dr, [data-run] .dr { animation: none; stroke-dashoffset: 0; }
+    .glint, [data-run] .glint { animation: none; opacity: 1; transform: none; }
+  }
+</style>

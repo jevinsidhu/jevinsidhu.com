@@ -1,0 +1,66 @@
+---
+/* The floating "memory card" on the home page: one image cut into five
+   vertical slices. Each slice carries transition-name slice-N, which pairs
+   with the matching filmstrip frame on the case-study page so the browser
+   morphs them across the navigation. */
+interface Props { href: string; thumb: string; label: string }
+const { href, thumb, label } = Astro.props;
+const slices = [0, 1, 2, 3, 4];
+---
+<div id="cardW" class="cardW" data-still>
+  <div id="bloom" class="bloom"></div>
+  <a id="card" class="card" href={href} aria-label={label} data-hot>
+    <div id="slices" class="slices">
+      {slices.map((i) => (
+        <div class="slc" transition:name={`slice-${i}`} style={`background-image:url(${thumb});background-position:${i * 25}% 50%`}></div>
+      ))}
+    </div>
+  </a>
+  <div class="shadow"></div>
+</div>
+
+<style>
+  .cardW { position: relative; transform-style: preserve-3d; transition: transform .18s ease-out; width: min(400px, 100%); }
+  .bloom {
+    position: absolute; left: -90px; top: -90px; right: -90px; bottom: -40px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(var(--accrgb), .22), rgba(var(--accrgb), .08) 55%, transparent 75%);
+    opacity: 0; transform: scale(.85); transition: opacity .45s ease, transform .45s var(--ease-pop); pointer-events: none;
+  }
+  .card {
+    display: block; position: relative; width: 100%; aspect-ratio: 16 / 9;
+    background: #fff; border-radius: 14px; border: 1px solid rgba(var(--inkrgb), .08);
+    box-shadow: 0 1px 2px rgba(43,43,34,.05), 0 10px 24px rgba(43,43,34,.07), 0 32px 64px rgba(60,40,20,.14);
+    transition: box-shadow .4s cubic-bezier(.3,.9,.3,1);
+  }
+  .card[data-bob] { animation: bob 5s ease-in-out infinite; }
+  .slices { position: absolute; inset: 0; display: flex; gap: 0; transition: gap .35s var(--ease-pop); }
+  .slc {
+    flex: 1; background-size: 500% auto; background-repeat: no-repeat;
+    transition: border-radius .35s, box-shadow .35s; pointer-events: none;
+  }
+  .slc:first-child { border-radius: 14px 0 0 14px; }
+  .slc:last-child { border-radius: 0 14px 14px 0; }
+  .shadow {
+    width: 72%; height: 18px; margin: 28px auto 0; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(60,40,20,.2), transparent);
+    animation: shadowPulse 5s ease-in-out infinite;
+  }
+  @media (hover: hover) {
+    .cardW:hover .bloom { opacity: 1; transform: scale(1); }
+    .cardW:hover .card { box-shadow: 0 1px 2px rgba(43,43,34,.06), 0 18px 36px rgba(43,43,34,.10), 0 48px 88px rgba(60,40,20,.20); }
+    .cardW:hover .slices { gap: 5px; }
+    .cardW:hover .slc { border-radius: 5px !important; box-shadow: inset 0 0 0 1px rgba(43,43,34,.06); }
+  }
+  /* Flat state — no hover gaps/rounding — while pressed (about to navigate),
+     while a view transition is in flight (the tiles must land exactly on
+     the boxes captured at swap time), and after landing until the pointer
+     moves again (so nothing drifts under a resting cursor). */
+  .cardW[data-press], .cardW[data-still], :global(html[data-vt]) .cardW { transition-duration: .16s; }
+  .cardW[data-press] .slices, .cardW[data-still] .slices, :global(html[data-vt]) .cardW .slices { gap: 0 !important; transition-duration: .16s; }
+  .cardW[data-press] .slc, .cardW[data-still] .slc, :global(html[data-vt]) .cardW .slc { border-radius: 0 !important; box-shadow: none !important; transition-duration: .16s; }
+  .cardW[data-press] .slc:first-child, .cardW[data-still] .slc:first-child, :global(html[data-vt]) .cardW .slc:first-child { border-radius: 14px 0 0 14px !important; }
+  .cardW[data-press] .slc:last-child, .cardW[data-still] .slc:last-child, :global(html[data-vt]) .cardW .slc:last-child { border-radius: 0 14px 14px 0 !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .card[data-bob], .shadow { animation: none; }
+  }
+</style>

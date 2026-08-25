@@ -1,0 +1,19 @@
+---
+interface Props { items: { title: string; desc: string }[] }
+const { items } = Astro.props;
+---
+<div class="grid">
+  {items.map((f) => (
+    <div data-shine="soft" class="cell">
+      <div class="t">{f.title}</div>
+      <div class="d">{f.desc}</div>
+    </div>
+  ))}
+</div>
+<style>
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 22px 0 26px; }
+  .cell { position: relative; overflow: hidden; border: 1.5px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--card); }
+  .t { font: 600 16px var(--font-sans); color: var(--ink); }
+  .d { font: 13px/1.55 var(--font-sans); color: var(--t3); margin-top: 5px; }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+</style>
