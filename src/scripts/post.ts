@@ -152,12 +152,28 @@ function initVideos(post: HTMLElement) {
   // the edge of the viewport doesn't start playback).
   const io = new IntersectionObserver((es) => es.forEach((en) => {
     const v = en.target as HTMLVideoElement;
-    if (en.intersectionRatio >= 0.5) v.play().catch(() => {});
-    else if (en.intersectionRatio <= 0.15 && !v.paused) v.pause();
+    if (en.intersectionRatio >= 0.5) { v.dataset.want = '1'; v.play().catch(() => {}); }
+    else if (en.intersectionRatio <= 0.15) { delete v.dataset.want; if (!v.paused) v.pause(); }
   }), { threshold: [0.15, 0.5] });
+  // Pre-warm the decoder before a video reaches the viewport (iOS shows a
+  // blank flick if playback starts before any frame is decoded): a brief
+  // muted play-pause pulls the first frame in.
+  const warm = new IntersectionObserver((es) => es.forEach((en) => {
+    if (!en.isIntersecting) return;
+    const v = en.target as HTMLVideoElement;
+    warm.unobserve(v);
+    v.play().then(() => { if (!v.dataset.want) v.pause(); }).catch(() => {});
+  }), { rootMargin: '500px 0px' });
   post.querySelectorAll<HTMLVideoElement>('figure video[muted]').forEach((v) => {
     v.muted = true;
+    // The overlay poster hides the swap: fade it only once frames render.
+    const poster = v.parentElement?.querySelector<HTMLElement>('.vposter');
+    if (poster) {
+      const onTime = () => { if (v.currentTime > 0.03) { poster.dataset.hide = '1'; v.removeEventListener('timeupdate', onTime); } };
+      v.addEventListener('timeupdate', onTime);
+    }
     io.observe(v);
+    warm.observe(v);
   });
 }
 

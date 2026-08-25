@@ -40,6 +40,11 @@ function initPlayer(p: HTMLElement) {
     if (v.duration) v.currentTime = ((e.clientX - r.left) / r.width) * v.duration;
   });
   ['play', 'pause', 'timeupdate', 'volumechange', 'loadedmetadata'].forEach((n) => v.addEventListener(n, paint));
+  const poster = p.querySelector<HTMLElement>('.vposter');
+  if (poster) {
+    const onTime = () => { if (v.currentTime > 0.03) { poster.dataset.hide = '1'; v.removeEventListener('timeupdate', onTime); } };
+    v.addEventListener('timeupdate', onTime);
+  }
   v.addEventListener('ended', () => {
     v.currentTime = 0;
     if (!v.muted) { delete p.dataset.started; v.muted = true; } // back to ambient

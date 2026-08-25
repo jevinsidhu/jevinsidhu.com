@@ -17,7 +17,12 @@ const { src, poster, caption, placeholder, height = 300, width, alt = '', fill =
 const isVideo = src?.endsWith('.mp4') || src?.endsWith('.webm');
 ---
 <figure class:list={['fig', { fill }]} style={grow ? `flex-grow:${grow}` : undefined}>
-  {isVideo && <video src={src} poster={poster} muted loop playsinline preload="metadata" width={width}></video>}
+  {isVideo && (
+    <div class="vshell">
+      <video src={src} poster={poster} muted loop playsinline preload="metadata" width={width}></video>
+      {poster && <img class="vposter" src={poster} alt="" aria-hidden="true" loading="lazy" decoding="async" />}
+    </div>
+  )}
   {src && !isVideo && <img src={src} alt={alt} loading="lazy" decoding="async" width={width} />}
   {!src && <div class="placeholder" style={`height:${height}px`} set:html={placeholder ?? 'drop media here'} />}
   {caption && <figcaption>{caption}</figcaption>}
@@ -27,6 +32,12 @@ const isVideo = src?.endsWith('.mp4') || src?.endsWith('.webm');
   .fig { margin: 28px 0 0; flex: 1; min-width: 0; }
   .fig.fill { display: flex; flex-direction: column; }
   .fig.fill video { flex: 1; min-height: 0; object-fit: cover; }
+  .vshell { position: relative; }
+  .vposter {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 12px;
+    pointer-events: none; transition: opacity .3s ease;
+  }
+  .vposter[data-hide] { opacity: 0; }
   .fig img, .fig video {
     width: 100%; display: block; border-radius: 12px; border: 1.5px solid var(--line);
     transition: transform .35s var(--ease-pop), box-shadow .35s;
