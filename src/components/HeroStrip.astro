@@ -58,4 +58,13 @@ const frames = [0, 1, 2, 3, 4];
     pointer-events: none; z-index: 6;
     opacity: 0; transition: opacity .45s ease; will-change: transform;
   }
+  @media (max-width: 780px) {
+    /* no lift/scale on mobile — the passing playhead just brightens frames
+       (the dim overlay easing to 0 is the highlight) */
+    .frH, .frH[data-lift] { transform: none; transition: none; will-change: auto; }
+    .frH::after { display: none; }
+    /* smaller playhead, timecode beneath the strip */
+    .playhead { top: 88px; height: calc(var(--fh) + 16px); width: 2.5px; }
+    .timecode { top: calc(96px + var(--fh) + 14px); font-size: 10.5px; }
+  }
 </style>
