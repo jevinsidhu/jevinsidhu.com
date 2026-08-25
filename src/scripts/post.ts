@@ -168,7 +168,9 @@ function initVideos(post: HTMLElement) {
     warm.unobserve(v);
     v.play().then(() => { if (!v.dataset.want) v.pause(); }).catch(() => {});
   }), { rootMargin: '500px 0px' });
-  post.querySelectorAll<HTMLVideoElement>('figure video[muted]').forEach((v) => {
+  // (figure.player is excluded — the walkthrough has its own controller;
+  // two observers issuing play/pause fight each other)
+  post.querySelectorAll<HTMLVideoElement>('figure:not(.player) video[muted]').forEach((v) => {
     v.muted = true;
     // The overlay poster hides the swap: fade it only once frames render.
     const poster = v.parentElement?.querySelector<HTMLElement>('.vposter');
