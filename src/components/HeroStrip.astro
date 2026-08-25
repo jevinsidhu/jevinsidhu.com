@@ -28,24 +28,34 @@ const frames = [0, 1, 2, 3, 4];
   }
   .strip { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; }
   .frH {
-    width: var(--fw); height: var(--fh); border-radius: 12px; overflow: hidden; position: relative; background: #fff;
+    width: var(--fw); height: var(--fh); border-radius: 12px; position: relative; background: #fff;
     box-shadow: 0 6px 14px rgba(43,43,34,.10), 0 20px 44px rgba(60,40,20,.13);
-    transition: transform .3s cubic-bezier(.2,1.3,.4,1), box-shadow .3s;
+    transition: transform .3s cubic-bezier(.2,1.3,.4,1);
+    will-change: transform;
   }
+  .frH[data-lift] { transform: translateY(-16px) scale(1.06); }
+  /* the lifted shadow is pre-rendered and crossfaded — animating box-shadow
+     itself repaints every frame and stutters on iOS */
+  .frH::after {
+    content: ''; position: absolute; inset: 0; border-radius: 12px; pointer-events: none;
+    box-shadow: 0 16px 30px rgba(43,43,34,.15), 0 38px 74px rgba(60,40,20,.22);
+    opacity: 0; transition: opacity .3s;
+  }
+  .frH[data-lift]::after { opacity: 1; }
   .frH .img { position: absolute; inset: 6px; border-radius: 8px; background-size: 500% auto; background-repeat: no-repeat; pointer-events: none; }
   /* Dim starts invisible so it can't pop in when the morph snapshot lifts;
      it eases to its resting darkness once the transition has settled. */
-  .dimH { position: absolute; inset: 0; background: rgba(43,43,34,.28); opacity: 0; transition: opacity .6s ease; pointer-events: none; }
+  .dimH { position: absolute; inset: 0; border-radius: 12px; background: rgba(43,43,34,.28); opacity: 0; transition: opacity .6s ease; pointer-events: none; }
   .band[data-live] .dimH { opacity: 1; }
   .playhead {
-    position: absolute; top: 62px; width: 3px; height: calc(var(--fh) + 50px); border-radius: 2px; background: var(--acc);
-    box-shadow: 0 0 14px rgba(var(--accrgb), .55); pointer-events: none; z-index: 6; left: 50%;
-    opacity: 0; transition: opacity .45s ease;
+    position: absolute; top: 62px; left: 0; width: 3px; height: calc(var(--fh) + 50px); border-radius: 2px; background: var(--acc);
+    box-shadow: 0 0 14px rgba(var(--accrgb), .55); pointer-events: none; z-index: 6;
+    opacity: 0; transition: opacity .45s ease; will-change: transform;
   }
   .band[data-live] .playhead, .band[data-live] .timecode { opacity: 1; }
   .timecode {
-    position: absolute; top: 34px; left: 50%; font: 500 12px var(--font-mono); color: var(--acc);
-    transform: translateX(-50%); pointer-events: none; z-index: 6;
-    opacity: 0; transition: opacity .45s ease;
+    position: absolute; top: 34px; left: 0; font: 500 12px var(--font-mono); color: var(--acc);
+    pointer-events: none; z-index: 6;
+    opacity: 0; transition: opacity .45s ease; will-change: transform;
   }
 </style>

@@ -42,8 +42,11 @@ function initHero(post: HTMLElement) {
       if (live && hov) hp += (Math.max(0, Math.min(1, (hmx - sL) / sW)) - hp) * 0.18;
       else if (live && !reduced) { const ph = ((performance.now() - t0) / 16000) % 1; hp = sweepEase(ph < 0.5 ? ph * 2 : 2 - ph * 2); } // 8s each way
       const px = sL + hp * sW;
-      ph.style.left = `${px}px`; tc.style.left = `${px}px`;
-      tc.textContent = `0:${String(Math.min(8, Math.floor(8 * hp + 1e-6))).padStart(2, '0')}`; // one tick per second
+      // transforms, not `left`: layout properties force reflow every frame (janky on iOS)
+      ph.style.transform = `translateX(${px}px)`;
+      tc.style.transform = `translateX(${px}px) translateX(-50%)`;
+      const label = `0:${String(Math.min(8, Math.floor(8 * hp + 1e-6))).padStart(2, '0')}`; // one tick per second
+      if (tc.textContent !== label) tc.textContent = label;
       if (!live) { requestAnimationFrame(loop); return; }
       // Let the playhead fade in first; the frames start reacting to it a beat later.
       if (performance.now() - liveAt < 380) { requestAnimationFrame(loop); return; }
@@ -51,8 +54,9 @@ function initHero(post: HTMLElement) {
       frames.forEach((f, i) => {
         const fr = f.getBoundingClientRect(), cx = fr.left - hr.left + fr.width / 2;
         const near = Math.abs(px - cx) < fr.width / 2 + 6, passed = px > cx;
-        f.style.transform = near ? 'translateY(-16px) scale(1.06)' : 'translateY(0)';
-        f.style.boxShadow = near ? '0 16px 30px rgba(43,43,34,.15),0 38px 74px rgba(60,40,20,.22)' : '';
+        // attribute toggle → CSS transform + pre-rendered shadow crossfade
+        // (animating box-shadow inline repaints every frame; stutters on iOS)
+        f.toggleAttribute('data-lift', near);
         const dim = f.querySelector<HTMLElement>('.dimH')!;
         const target = near ? '0' : passed ? '0.45' : '1';
         if (dim.style.opacity !== target) dim.style.opacity = target;

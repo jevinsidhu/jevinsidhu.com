@@ -14,7 +14,7 @@ Written 2026-08-23 for the next Claude Code session. Read this first, then `~/.c
 | Theme picker, sounds, leaf cursor, TOC, margin notes, video speed toggles, shine | ✅ ported, **not yet verified in a real browser by an agent** |
 | Mobile layout | ✅ CSS written, **unverified** |
 | git init / GitHub repo | ✅ github.com/jevinsidhu/jevinsidhu.com (main; gh auth + `gh auth setup-git` done) |
-| Vercel link / deploy / domain | ✅ project `jevinsidhu.com` (team jevin-sidhus-projects-03cf4faa), prod live at jevinsidhucom.vercel.app; domains jevinsidhu.com + www attached (await DNS). `vercel.json` cleanUrls:true needed for /clips (Astro emits clips.html). Git auto-deploy NOT connected — Vercel account lacks a GitHub Login Connection (connect in dashboard → then `vercel git connect --yes`); until then deploy via `vercel deploy --prod --yes` |
+| Vercel link / deploy / domain | ✅ project `jevinsidhu.com` (team jevin-sidhus-projects-03cf4faa), prod live at jevinsidhucom.vercel.app; domains jevinsidhu.com + www attached (await DNS). `vercel.json` cleanUrls:true needed for /clips (Astro emits clips.html). Git auto-deploy CONNECTED (GitHub login connection + Vercel GitHub App installed, `vercel git connect` done; verified — a push to main auto-deployed to production in ~25s). Deploy = `git push`; don't also run `vercel deploy --prod` (double-ship) |
 | Namecheap DNS | ⏳ user to set: `@ A 76.76.21.21`, `www CNAME cname.vercel-dns.com` (current NS = nsone/Namecheap PremiumDNS; Vercel auto-verifies + issues certs after) |
 
 ## Why the previous session stopped
