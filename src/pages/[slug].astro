@@ -77,6 +77,7 @@ const { title, subtitle, thumb, og, press, toc } = study.data;
   .col :global(.author p) { font: inherit; color: inherit; margin: 0; }
   .col :global(.author img) { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none; border: 1.5px solid var(--line); }
   .col :global(.author a) { font-style: normal; color: var(--ink); text-decoration: underline; text-decoration-color: rgba(var(--accrgb), .3); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .col :global(.author a:hover) { color: var(--acc); text-decoration-color: var(--acc); }
   @media (max-width: 780px) {
     .back { top: 12px; left: 14px; transition: color .2s, border-color .2s, transform .35s ease; }
     .share { top: 12px; right: 14px; transition: color .2s, border-color .2s, width .3s ease, transform .35s ease; }

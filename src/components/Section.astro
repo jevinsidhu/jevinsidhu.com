@@ -28,6 +28,8 @@ const word = principle ? WORDS[principle - 1] : '';
   .body :global(h4) { font: 600 16.5px/1.8 var(--font-sans); color: var(--ink); margin: 30px 0 8px; }
   .body :global(p) { font: 16.5px/1.8 var(--font-sans); color: var(--t1); margin: 0 0 18px; }
   .body :global(p a) { color: var(--ink); text-decoration: underline; text-decoration-color: rgba(var(--accrgb), .6); text-underline-offset: 3px; }
+  /* the explicit colour above out-ranks the global a:hover, so state it here */
+  .body :global(p a:hover) { color: var(--acc); text-decoration-color: var(--acc); }
   /* the pull-quote: same words, its own stage — the wavy underline inks in on scroll */
   .body :global(.pmf) {
     display: block; margin: 20px 0 18px; text-wrap: balance;
