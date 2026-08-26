@@ -1,0 +1,66 @@
+---
+/* The sign-off that closes a case study: the same ink autograph that shows
+   up as a margin doodle earlier now actually signs the piece, with the
+   author's name, the date, and a quiet row of links beneath. Draws in on
+   scroll via the shared [data-sketch]/[data-run] machinery. */
+interface Props { name: string; date: string }
+const { name, date } = Astro.props;
+---
+<div class="signoff" data-sketch>
+  <svg class="sig" viewBox="0 0 180 108" width="172" role="img" aria-label={`Signed, ${name}`}>
+    <path class="dr" style="--d:.2s" pathLength="1"
+      d="M14 72 C 20 30, 38 28, 37 54 C 36 72, 24 80, 20 71 C 16 62, 32 54, 46 58 C 58 61, 60 72, 71 64 S 87 44, 93 59 C 97 70, 106 68, 114 58 C 121 49, 127 56, 133 63 Q 141 70, 154 58" />
+    <path class="dr swash" style="--d:1.3s" pathLength="1" d="M24 88 Q 96 102 168 80 q -22 12 -44 12" />
+    <path class="dr" style="--d:1.9s" pathLength="1" d="M164 64 q 2 -2 3 0 q -1 2 -3 0" />
+  </svg>
+  <div class="who">{name}</div>
+  <div class="when">{date}</div>
+  <div class="links">
+    <a href="https://twitter.com/jevinsidhu" target="_blank" rel="noopener" aria-label="X" data-hot>
+      <svg width="15" height="15" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M13.6 2h2.5l-5.5 6.3L17 16h-4.8l-3.7-4.8L4.2 16H1.7l5.9-6.7L1 2h4.9l3.3 4.4L13.6 2Zm-.9 12.5h1.4L5.4 3.4H3.9l8.8 11.1Z"/></svg>
+    </a>
+    <a href="https://instagram.com/jevinsidhu" target="_blank" rel="noopener" aria-label="Instagram" data-hot>
+      <svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <rect x="2.6" y="2.6" width="12.8" height="12.8" rx="4" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="9" cy="9" r="3.2" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="12.9" cy="5.2" r="1" fill="currentColor"/>
+      </svg>
+    </a>
+    <a href="mailto:jevin.sidhu@gmail.com" aria-label="Email" data-hot>
+      <svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <rect x="2.2" y="4" width="13.6" height="10" rx="2.2" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M3 5.4 9 9.9l6-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </a>
+  </div>
+</div>
+
+<style>
+  .signoff { margin: 76px 0 0; --pencil: color-mix(in srgb, color-mix(in srgb, var(--acc) 40%, var(--ink)) 62%, transparent); }
+  .sig { display: block; margin-left: -6px; }
+  .dr {
+    fill: none; stroke: color-mix(in srgb, var(--acc) 78%, var(--ink));
+    stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1 2; stroke-dashoffset: 0; /* drawn unless JS arms it */
+  }
+  .signoff[data-armed] .dr { stroke-dashoffset: 1.02; }
+  .swash { stroke-width: 1.9; }
+  .signoff[data-run] .dr {
+    animation-name: sodraw; animation-duration: .6s; animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(.45, 0, .3, 1); animation-delay: var(--d, 0s);
+  }
+  @keyframes sodraw { to { stroke-dashoffset: 0; } }
+
+  .who { font: 600 15px var(--font-sans); color: var(--ink); margin-top: 10px; }
+  .when { font: 14px var(--font-sans); color: var(--t3); margin-top: 3px; }
+  .links { display: flex; gap: 14px; margin-top: 16px; color: var(--t4); }
+  .links a { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; color: inherit; transition: color .2s, background .2s; }
+  .links a:hover { color: var(--acc); background: rgba(var(--accrgb), .1); }
+  .links svg { display: block; }
+
+  /* name/date/links are real content — never gated behind an observer */
+
+  @media (prefers-reduced-motion: reduce) {
+    .dr, .signoff[data-armed] .dr, .signoff[data-run] .dr { animation: none; stroke-dashoffset: 0; }
+  }
+</style>

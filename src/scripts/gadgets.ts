@@ -249,6 +249,9 @@ function initLightbox(post: HTMLElement) {
 
 /* ---- the penciled pilot sketch ---- */
 function initSketch(sk: HTMLElement) {
+  // Mark that JS is driving this: the markup renders fully visible, so a
+  // failed/blocked observer can never hide real content (see Signoff).
+  sk.dataset.armed = '1';
   const io = new IntersectionObserver((es) => es.forEach((en) => {
     if (en.isIntersecting) { sk.dataset.run = '1'; io.disconnect(); }
   }), { threshold: 0.45 });

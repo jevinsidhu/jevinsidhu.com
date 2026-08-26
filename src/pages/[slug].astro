@@ -67,13 +67,16 @@ const { title, subtitle, thumb, og, press, toc } = study.data;
   .col :global(.lede) { font: 16.5px/1.8 var(--font-sans); color: var(--t1); margin: 34px 0 18px; }
   /* the intro stack (player → entry cards → shelf) breathes */
   .col :global(.player + .row) { margin-top: 48px; }
+  /* back matter: one hairline separates the signed essay from its credits */
+  .col :global(.backmatter) { border-top: 1px solid var(--line2); margin-top: 60px; padding-top: 30px; }
+  .col :global(.bm-label) { font: 600 12px var(--font-sans); letter-spacing: .02em; color: var(--acc); margin-bottom: 10px; }
   .col :global(.author) {
-    display: flex; gap: 16px; align-items: center; border-top: 1px solid var(--line2); margin-top: 44px; padding-top: 26px;
+    display: flex; gap: 16px; align-items: center; margin-top: 30px;
     font: 13px/1.6 var(--font-sans); color: var(--t3);
   }
   .col :global(.author p) { font: inherit; color: inherit; margin: 0; }
   .col :global(.author img) { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none; border: 1.5px solid var(--line); }
-  .col :global(.author a) { color: var(--ink); text-decoration: underline; text-decoration-color: rgba(var(--accrgb), .5); text-underline-offset: 2px; }
+  .col :global(.author a) { font-style: normal; color: var(--ink); text-decoration: underline; text-decoration-color: rgba(var(--accrgb), .3); text-underline-offset: 3px; text-decoration-thickness: 1px; }
   @media (max-width: 780px) {
     .back { top: 12px; left: 14px; transition: color .2s, border-color .2s, transform .35s ease; }
     .share { top: 12px; right: 14px; transition: color .2s, border-color .2s, width .3s ease, transform .35s ease; }
