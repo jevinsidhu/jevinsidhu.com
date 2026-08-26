@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Private — Jevin Sidhu" description="This case study is password protected.">
+  <main class="gate">
+    <div class="box">
+      <h1>Private</h1>
+      <p class="lede">This case study is password protected. Pop in the password and it'll stay unlocked on this device.</p>
+      <form method="POST" action="/unlock" data-astro-reload>
+        <input type="hidden" name="next" id="next" value="/clips" />
+        <input
+          type="password" name="password" id="pw" autocomplete="current-password"
+          placeholder="Password" aria-label="Password" required autofocus
+        />
+        <button type="submit" data-hot>Unlock</button>
+      </form>
+      <p class="err" id="err" hidden>That password didn't work — try again.</p>
+      <a class="home" href="/">← Back home</a>
+    </div>
+  </main>
+  <script is:inline>
+    const q = new URLSearchParams(location.search);
+    const dest = q.get('next');
+    if (dest && dest.startsWith('/') && !dest.startsWith('//')) document.getElementById('next').value = dest;
+    if (q.get('e')) {
+      document.getElementById('err').hidden = false;
+      document.getElementById('pw').setAttribute('aria-invalid', 'true');
+    }
+  </script>
+</Base>
+
+<style>
+  .gate {
+    min-height: 100dvh; display: grid; place-items: center; padding: 24px;
+    background: radial-gradient(95% 70% at 50% 115%, rgba(var(--accrgb), .16), transparent 60%), var(--bg);
+  }
+  .box { width: min(420px, 100%); text-align: left; }
+  h1 { font: 400 clamp(38px, 8vw, 52px)/1.05 var(--font-display); color: var(--ink); margin: -.22em 0 0; }
+  .lede { font: 15px/1.65 var(--font-sans); color: var(--t2); margin: 18px 0 26px; text-wrap: pretty; }
+  form { display: flex; gap: 10px; }
+  input[type='password'] {
+    flex: 1; min-width: 0; font: 15px var(--font-sans); color: var(--ink);
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  input[type='password']::placeholder { color: var(--t4); }
+  input[type='password']:focus {
+    outline: none; border-color: color-mix(in srgb, var(--acc) 55%, var(--line));
+    box-shadow: 0 0 0 4px rgba(var(--accrgb), .12);
+  }
+  input[aria-invalid='true'] { border-color: color-mix(in srgb, var(--acc) 70%, var(--line)); }
+  button {
+    font: 600 14px var(--font-sans); color: var(--bg); background: var(--ink);
+    border: 0; border-radius: 12px; padding: 12px 20px; cursor: pointer;
+    transition: transform .2s var(--ease-pop), opacity .2s;
+  }
+  button:hover { transform: translateY(-1px); }
+  button:active { transform: scale(.97); }
+  .err { font: 13px var(--font-sans); color: var(--acc); margin: 14px 0 0; }
+  .home { display: inline-block; font: 13px var(--font-sans); color: var(--t3); margin-top: 28px; text-decoration: none; }
+  .home:hover { color: var(--acc); }
+</style>
