@@ -26,9 +26,12 @@ function initHero(post: HTMLElement) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let hov = false, hmx = 0, t0 = performance.now(), hp = 0, lastFr = -1, liveAt = 0;
 
-  hB.addEventListener('mouseenter', () => { hov = true; });
-  hB.addEventListener('mousemove', (e) => { hmx = e.clientX - hB.getBoundingClientRect().left; });
-  hB.addEventListener('mouseleave', () => {
+  // Scrubbing is bound to the filmstrip itself, not the whole band — the
+  // empty space around the frames shouldn't drag the playhead. (mouseleave
+  // ignores moves into descendants, so a lifted frame doesn't break it.)
+  strip.addEventListener('mouseenter', () => { hov = true; });
+  strip.addEventListener('mousemove', (e) => { hmx = e.clientX - hB.getBoundingClientRect().left; });
+  strip.addEventListener('mouseleave', () => {
     hov = false;
     t0 = performance.now() - hp * 8000; // resume the linear sweep from the current position (ascending)
   });
