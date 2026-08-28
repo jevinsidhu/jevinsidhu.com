@@ -23,6 +23,13 @@ function initPlayer(p: HTMLElement) {
       time.textContent = `${fmt(v.currentTime)} / ${fmt(v.duration)}`;
     }
   };
+  // Sound is opt-in per visit: a previous unmute must never carry over.
+  // Element state can survive a navigation (bfcache restore, persisted DOM),
+  // so reset explicitly on init and whenever the page is shown again.
+  const resetAudio = () => { v.muted = true; p.removeAttribute('data-started'); paint(); };
+  resetAudio();
+  window.addEventListener('pageshow', (e) => { if ((e as PageTransitionEvent).persisted) resetAudio(); });
+  document.addEventListener('astro:after-swap', () => { if (document.body.contains(v)) resetAudio(); });
   const soundOn = () => {
     v.muted = false; userPaused = false;
     v.play().then(() => { p.dataset.started = '1'; sfx.tick(); }).catch(() => {});

@@ -1,6 +1,6 @@
 ---
 title: Building Clips with Creators in Control
-subtitle: Building Patreon's first AI product for creators
+subtitle: How we made it easy to share moments from a long-form video
 blurb: Creators invest in making great long-form videos. Clips packages that work into moments they can share without giving up creative control.
 thumb: /media/clips-thumb.jpg
 og: /og/clips.png
@@ -48,18 +48,6 @@ import GemDoodle from '../../components/GemDoodle.astro';
   <Figure src="/media/clips/entry-profile.jpg" grow={1.96} alt="A Clips review card on the creator's profile page" caption="A nudge appears on the creator dashboard" />
 </Row>
 
-<Shelf items={[
-  { src: '/media/clips/wild-1.jpg', alt: "EnjoyingArt's Quip with a watercolor Clip" },
-  { src: '/media/clips/wild-2.jpg', alt: "Ginny Di's Quip with a Clip from her Felicia Day interview" },
-  { src: '/media/clips/wild-3.jpg', alt: "Knit Graffiti's Quip with a Clip from a recorded live" },
-  { src: '/media/clips/wild-4.jpg', alt: "Ben & David's Quip with a Clip from a Disneyland ride" },
-  { src: '/media/clips/wild-5.jpg', alt: "Patrick Visser's Quip with a watercolour Clip of Mt Cook" },
-  { src: '/media/clips/wild-6.jpg', alt: "Tales from the Stinky Dragon's Quip with a Baldur's Gate 3 Clip" },
-  { src: '/media/clips/wild-7.jpg', alt: "JonathanOst Guitar's Quip with a Clip on practicing triads" },
-  { src: '/media/clips/wild-8.jpg', alt: "Paint Club's Quip with a sketchbook Clip" },
-  { src: '/media/clips/wild-9.jpg', alt: "Bliss Foster's Quip with a Clip about Alexander McQueen" },
-]} />
-
 <Section id="s1" principle={1} title="Build prototypes I could unwind">
   <p>There was urgency to learn quickly, while avoiding engineering decisions that would be painful to reverse. I created a prototyped implementation that would not scale, but would allow me to test the product hypothesis with a small cohort: suggestions from an LLM could help creators turn long-form video into Clips without taking creative control away from them.</p>
   <p>Code is cheap, but data and APIs are expensive. A polluted database, a mobile endpoint a team has to support forever, or a contract we depend on is hard to rollback. I avoided durable client contracts, skipped unnecessary new enums, stood up resources we could tear down, and kept prototype data out of the main database. I kept production rigor while delaying permanent commitments until the product had earned them. There were zero incidents associated with this work and all prototype code was cleaned up before the Alpha rollout.</p>
@@ -89,8 +77,7 @@ import GemDoodle from '../../components/GemDoodle.astro';
   <Phones items={[{ src: '/media/clips/notification.mp4', poster: '/media/clips/notification-poster.jpg' }]} />
   <h4>What I measured</h4>
   <p>For the pilot, the success criteria was how many creators post their second Clip. It meant the creator found enough value to come back, review another suggestion, make an editorial decision, and share again. I also tracked supporting signals like watch and engagement on Quips with Clips, notification click-through rate, and qualitative feedback on Clip quality.</p>
-  <p>By the end of the pilot, all creators who responded to our emails reached the north-star behavior of Quipping a Clip more than once. Quips with Clips performed better than regular quoted-post Quips in early pilot comparisons, and creators shared that they wanted to incorporate Clips into their regular posting workflow.</p>
-  <p>In the creator debriefs, pilot creators asked to keep Clips on after the trial. One creator gave the cleanest product-market-fit quote of the project: <span class="pmf" data-sketch>“I wasn’t testing it, I was just using it.”</span></p>
+  <p>By the end of the pilot, all creators who responded to our emails reached the north-star behavior of Quipping a Clip more than once. In the creator debriefs, pilot creators asked to keep Clips on after the trial. One creator gave the cleanest product-market-fit quote of the project: <span class="pmf" data-sketch>“I wasn’t testing it, I was just using it.”</span></p>
   <LensDoodle slot="note" top={1280} />
 </Section>
 
