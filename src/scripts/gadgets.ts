@@ -68,27 +68,52 @@ function initPlayer(p: HTMLElement) {
 /* ---- fullscreen viewer ----
    Tap an image or muted loop → it flies from its place in the page to the
    centre over a dimmed scrim; Esc / tap returns it exactly where it came
-   from. The original keeps its layout slot (visibility: hidden); a fixed
+   from. The original keeps its layout slot (held at opacity 0); a fixed
    twin does the flying — transform-only, so the flight stays on the GPU. */
 let lbOpen = false;
+
+const capped = (p: Promise<void>, ms: number) =>
+  Promise.race([p, new Promise<void>((res) => setTimeout(res, ms))]);
+
+/* Resolves when a <video> has actually PRESENTED a frame, not merely when it
+   claims it could render one. readyState alone is not enough on iOS Safari:
+   it reports HAVE_CURRENT_DATA while the element is still showing its poster
+   attribute, so a reveal gated on readyState flashes the poster and then the
+   real frame. requestVideoFrameCallback fires on presentation, which is the
+   thing we actually need; readyState is the fallback for browsers without it. */
+function videoPainted(v: HTMLVideoElement) {
+  return new Promise<void>((res) => {
+    const rvfc = (v as HTMLVideoElement & {
+      requestVideoFrameCallback?: (cb: () => void) => number;
+    }).requestVideoFrameCallback;
+    if (rvfc) { rvfc.call(v, () => res()); return; }
+    if (v.readyState >= 2) res();
+    else v.addEventListener('loadeddata', () => res(), { once: true });
+  });
+}
 
 /* A twin that hasn't got pixels yet is the whole flicker: a freshly created
    <img> is undecoded (naturalWidth 0) at insert, and a fresh <video> sits at
    readyState 0 — measured ~34ms to its first presented frame even from cache.
    Hide the original before then and the reader sees an empty box, or the
-   video's frame-0 poster, for a few frames. So wait for real pixels. */
-function twinReady(media: HTMLImageElement | HTMLVideoElement) {
-  const painted = new Promise<void>((res) => {
-    if (media instanceof HTMLVideoElement) {
-      // readyState >= HAVE_CURRENT_DATA: the frame at currentTime can render
-      if (media.readyState >= 2) res();
-      else media.addEventListener('loadeddata', () => res(), { once: true });
-    } else {
-      media.decode().then(() => res(), () => res()); // decode() also rasterises
-    }
-  });
-  // never let a stalled asset hold the tap hostage
-  return Promise.race([painted, new Promise<void>((res) => setTimeout(res, 600))]);
+   video's frame-0 poster, for a few frames. So wait for real pixels.
+   Everything is capped, so a stalled asset can never hold the tap hostage. */
+function imageReady(img: HTMLImageElement) {
+  return capped(new Promise<void>((res) => { img.decode().then(() => res(), () => res()); }), 600);
+}
+
+/* Seek first, THEN wait for paint. Safari drops a currentTime written before
+   metadata arrives, which would open the twin on frame 0 while the source sat
+   mid-clip — read as the poster flashing in. So the seek is deferred to
+   loadedmetadata when needed, and the frame we wait for is the one after it. */
+function videoTwinReady(v: HTMLVideoElement, at: number) {
+  return capped(new Promise<void>((res) => {
+    const paint = () => { videoPainted(v).then(() => res()); };
+    if (at < 0.05) { paint(); return; }
+    const seek = () => { v.currentTime = at; v.addEventListener('seeked', paint, { once: true }); };
+    if (v.readyState >= 1) seek();
+    else v.addEventListener('loadedmetadata', seek, { once: true });
+  }), 600);
 }
 
 function openViewer(el: HTMLImageElement | HTMLVideoElement) {
@@ -147,18 +172,22 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
   if (caption) q(lb, '.lb-cap').textContent = caption;
 
   let media: HTMLImageElement | HTMLVideoElement;
+  let ready: Promise<void>;
   if (isVideo) {
     const sv = el as HTMLVideoElement;
     const tv = document.createElement('video');
-    tv.src = sv.currentSrc || sv.src; tv.poster = sv.poster; tv.preload = 'auto';
+    // deliberately no poster: the reveal waits for a real frame, so a poster
+    // could only ever paint the wrong one (frame 0 under a source mid-clip)
+    tv.src = sv.currentSrc || sv.src; tv.preload = 'auto';
     tv.muted = true; tv.loop = true; tv.playsInline = true; tv.autoplay = true;
-    tv.currentTime = sv.currentTime;
+    ready = videoTwinReady(tv, sv.currentTime);
     sv.pause();
     media = tv;
   } else {
     const si = el as HTMLImageElement;
     const ti = document.createElement('img');
     ti.src = si.currentSrc || si.src; ti.alt = si.alt;
+    ready = imageReady(ti);
     media = ti;
   }
   const twin = document.createElement('div');
@@ -213,13 +242,16 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
     twin.style.boxShadow = '0 30px 90px rgba(0,0,0,.45)';
     requestAnimationFrame(() => {
       twin.style.opacity = '1';
-      shell.style.visibility = 'hidden';
+      // opacity, NOT visibility: iOS Safari tears down the video layer of a
+      // subtree it stops painting, and repaints the element's own poster when
+      // it comes back. Kept transparent, the layer stays warm.
+      shell.style.opacity = '0';
     });
     q<HTMLButtonElement>(lb, '.lb-close').focus({ preventScroll: true });
   };
   // Two frames after the pixels land, so the compositor has rastered the
   // twin at its (much larger) open size before it is ever shown.
-  twinReady(media).then(() => requestAnimationFrame(() => requestAnimationFrame(arm)));
+  ready.then(() => requestAnimationFrame(() => requestAnimationFrame(arm)));
 
   const close = () => {
     if (closing) return; closing = true;
@@ -245,27 +277,36 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
     let done = false;
     const finish = () => {
       if (done) return; done = true;
-      if (isVideo) {
-        const sv = el as HTMLVideoElement, tv = media as HTMLVideoElement;
-        sv.currentTime = tv.currentTime; sv.play().catch(() => {});
-      }
-      // Reveal the original under the twin. For video the overlay stays up a
-      // frame or two longer, covering the source's seek back to the twin's
-      // time; for an image there is nothing to wait for, and the landed twin
-      // is the aliased one, so it goes in the same commit as the reveal.
-      shell.style.visibility = '';
-      if (!isVideo) twin.style.opacity = '0';
-      // resume ambient motion (shelf loop) only once the image has landed
+      document.removeEventListener('keydown', onKey, true);
+      // resume ambient motion (shelf loop) only once the media has landed
       delete document.documentElement.dataset.lb;
       document.dispatchEvent(new CustomEvent('lb:closed'));
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        lb.remove();
-        document.documentElement.style.overflow = '';
-        document.documentElement.style.paddingRight = '';
-        prevFocus?.focus?.({ preventScroll: true });
-        lbOpen = false;
-      }));
-      document.removeEventListener('keydown', onKey, true);
+      lb.style.pointerEvents = 'none'; // the page is interactive again now
+
+      // Hand back in a single commit: source in, twin out. The old one-frame
+      // overlap assumed identical pixels, which was never true — the landed
+      // twin is the compositor-minified one — and on iOS that gap is exactly
+      // where the source video repaints its own poster.
+      const swap = () => {
+        shell.style.opacity = '';
+        twin.style.opacity = '0';
+        requestAnimationFrame(() => {
+          lb.remove();
+          document.documentElement.style.overflow = '';
+          document.documentElement.style.paddingRight = '';
+          prevFocus?.focus?.({ preventScroll: true });
+          lbOpen = false;
+        });
+      };
+      if (isVideo) {
+        const sv = el as HTMLVideoElement, tv = media as HTMLVideoElement;
+        sv.currentTime = tv.currentTime;
+        sv.play().catch(() => {});
+        // Keep the twin up until the source has genuinely presented a frame —
+        // otherwise it is revealed mid-seek, showing its poster or a stale
+        // frame. Capped so a video that never resumes can't strand the twin.
+        capped(videoPainted(sv), 250).then(swap);
+      } else swap();
     };
     if (dur === 0) finish();
     else {
