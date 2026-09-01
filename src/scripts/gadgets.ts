@@ -100,6 +100,10 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
   // border on the media itself. The twin copies it so both endpoints of the
   // flight are pixel-identical and nothing pops at the swap.
   const pres = (el.closest('.frame') as HTMLElement) ?? el;
+  // ...but what gets *hidden* is the whole shell: figure videos carry a
+  // separate .vposter overlay pinned over them, and hiding only the <video>
+  // leaves that still frame sitting on the page under the open lightbox.
+  const shell = (el.closest('.frame, .vshell') as HTMLElement) ?? pres;
   const pcs = getComputedStyle(pres);
   const rect = pres.getBoundingClientRect();
   const caption = el.closest('figure')?.querySelector('figcaption')?.textContent ?? '';
@@ -194,17 +198,24 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
     twin.style.borderWidth = `${srcBorder / m.s}px`;
     twin.style.borderRadius = `${srcRadius / m.s}px`;
     // The swap: identical pixels in the identical place, same frame.
-    twin.style.opacity = '1';
-    pres.style.visibility = 'hidden';
+    // The twin is rastered at its (large) open size and minified by the
+    // compositor down here, so at this end of the flight it reads thinner and
+    // more aliased than the original — a full card can land at scale .33.
+    // So commit the start state, launch the flight, and only reveal the twin
+    // on the NEXT frame, by which point it is already moving: the aliased
+    // raster is never painted sitting still, which is what read as a pop.
+    void twin.offsetWidth;
+    twin.style.transition = FLIGHT;
+    lb.dataset.open = '1'; // scrim + caption + close fade in (CSS)
+    twin.style.transform = 'none';
+    twin.style.borderRadius = '14px';
+    twin.style.borderWidth = '0px';
+    twin.style.boxShadow = '0 30px 90px rgba(0,0,0,.45)';
     requestAnimationFrame(() => {
-      twin.style.transition = FLIGHT;
-      lb.dataset.open = '1'; // scrim + caption + close fade in (CSS)
-      twin.style.transform = 'none';
-      twin.style.borderRadius = '14px';
-      twin.style.borderWidth = '0px';
-      twin.style.boxShadow = '0 30px 90px rgba(0,0,0,.45)';
-      q<HTMLButtonElement>(lb, '.lb-close').focus({ preventScroll: true });
+      twin.style.opacity = '1';
+      shell.style.visibility = 'hidden';
     });
+    q<HTMLButtonElement>(lb, '.lb-close').focus({ preventScroll: true });
   };
   // Two frames after the pixels land, so the compositor has rastered the
   // twin at its (much larger) open size before it is ever shown.
@@ -238,9 +249,12 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
         const sv = el as HTMLVideoElement, tv = media as HTMLVideoElement;
         sv.currentTime = tv.currentTime; sv.play().catch(() => {});
       }
-      // Reveal the original under the twin, then drop the overlay a frame
-      // later — the swap happens behind identical pixels, so no flash.
-      pres.style.visibility = '';
+      // Reveal the original under the twin. For video the overlay stays up a
+      // frame or two longer, covering the source's seek back to the twin's
+      // time; for an image there is nothing to wait for, and the landed twin
+      // is the aliased one, so it goes in the same commit as the reveal.
+      shell.style.visibility = '';
+      if (!isVideo) twin.style.opacity = '0';
       // resume ambient motion (shelf loop) only once the image has landed
       delete document.documentElement.dataset.lb;
       document.dispatchEvent(new CustomEvent('lb:closed'));
