@@ -72,6 +72,25 @@ function initPlayer(p: HTMLElement) {
    twin does the flying — transform-only, so the flight stays on the GPU. */
 let lbOpen = false;
 
+/* A twin that hasn't got pixels yet is the whole flicker: a freshly created
+   <img> is undecoded (naturalWidth 0) at insert, and a fresh <video> sits at
+   readyState 0 — measured ~34ms to its first presented frame even from cache.
+   Hide the original before then and the reader sees an empty box, or the
+   video's frame-0 poster, for a few frames. So wait for real pixels. */
+function twinReady(media: HTMLImageElement | HTMLVideoElement) {
+  const painted = new Promise<void>((res) => {
+    if (media instanceof HTMLVideoElement) {
+      // readyState >= HAVE_CURRENT_DATA: the frame at currentTime can render
+      if (media.readyState >= 2) res();
+      else media.addEventListener('loadeddata', () => res(), { once: true });
+    } else {
+      media.decode().then(() => res(), () => res()); // decode() also rasterises
+    }
+  });
+  // never let a stalled asset hold the tap hostage
+  return Promise.race([painted, new Promise<void>((res) => setTimeout(res, 600))]);
+}
+
 function openViewer(el: HTMLImageElement | HTMLVideoElement) {
   if (lbOpen) return;
   lbOpen = true;
@@ -127,7 +146,8 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
   if (isVideo) {
     const sv = el as HTMLVideoElement;
     const tv = document.createElement('video');
-    tv.src = sv.currentSrc || sv.src; tv.poster = sv.poster; tv.muted = true; tv.loop = true; tv.playsInline = true; tv.autoplay = true;
+    tv.src = sv.currentSrc || sv.src; tv.poster = sv.poster; tv.preload = 'auto';
+    tv.muted = true; tv.loop = true; tv.playsInline = true; tv.autoplay = true;
     tv.currentTime = sv.currentTime;
     sv.pause();
     media = tv;
@@ -143,10 +163,12 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
   // Scale-compensated frame: transforms scale borders and radii, so divide
   // by the current scale to make the start state visually identical to the
   // original, then transition to the open values alongside the flight.
+  const FLIGHT = `transform ${dur}s cubic-bezier(.3,.9,.3,1), border-radius ${dur}s, border-width ${dur}s, box-shadow ${dur}s ease`;
+  // Starts transparent, stacked exactly over the still-visible original, so
+  // the wait for pixels costs nothing on screen.
   twin.style.cssText = `left:${tx}px;top:${ty}px;width:${tw}px;height:${th}px;` +
     `border:${srcBorder / m0.s}px solid ${pcs.borderColor};border-radius:${srcRadius / m0.s}px;` +
-    `background:${pcs.backgroundColor};transform:${m0.t};` +
-    `transition:transform ${dur}s cubic-bezier(.3,.9,.3,1), border-radius ${dur}s, border-width ${dur}s, box-shadow ${dur}s ease;`;
+    `background:${pcs.backgroundColor};transform:${m0.t};opacity:0;transition:${FLIGHT};`;
   lb.appendChild(twin);
   lb.style.setProperty('--dur', `${Math.max(dur, 0.01)}s`);
   document.body.appendChild(lb);
@@ -160,19 +182,48 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
   sfx.tick();
 
   const prevFocus = document.activeElement as HTMLElement | null;
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  let closing = false, armed = false;
+  const arm = () => {
+    if (closing) return;
+    armed = true;
+    // Re-measure: the source can drift while we wait (a hover lift settling,
+    // an image above finishing its load), and a stale rect lands as a jump.
+    const m = map(pres.getBoundingClientRect());
+    twin.style.transition = 'none';
+    twin.style.transform = m.t;
+    twin.style.borderWidth = `${srcBorder / m.s}px`;
+    twin.style.borderRadius = `${srcRadius / m.s}px`;
+    // The swap: identical pixels in the identical place, same frame.
+    twin.style.opacity = '1';
     pres.style.visibility = 'hidden';
-    lb.dataset.open = '1'; // scrim + caption + close fade in (CSS)
-    twin.style.transform = 'none';
-    twin.style.borderRadius = '14px';
-    twin.style.borderWidth = '0px';
-    twin.style.boxShadow = '0 30px 90px rgba(0,0,0,.45)';
-    q<HTMLButtonElement>(lb, '.lb-close').focus({ preventScroll: true });
-  }));
+    requestAnimationFrame(() => {
+      twin.style.transition = FLIGHT;
+      lb.dataset.open = '1'; // scrim + caption + close fade in (CSS)
+      twin.style.transform = 'none';
+      twin.style.borderRadius = '14px';
+      twin.style.borderWidth = '0px';
+      twin.style.boxShadow = '0 30px 90px rgba(0,0,0,.45)';
+      q<HTMLButtonElement>(lb, '.lb-close').focus({ preventScroll: true });
+    });
+  };
+  // Two frames after the pixels land, so the compositor has rastered the
+  // twin at its (much larger) open size before it is ever shown.
+  twinReady(media).then(() => requestAnimationFrame(() => requestAnimationFrame(arm)));
 
-  let closing = false;
   const close = () => {
     if (closing) return; closing = true;
+    if (!armed) { // tapped out before it ever took off — tear down, no flight
+      document.removeEventListener('keydown', onKey, true);
+      delete document.documentElement.dataset.lb;
+      document.dispatchEvent(new CustomEvent('lb:closed'));
+      lb.remove();
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.paddingRight = '';
+      prevFocus?.focus?.({ preventScroll: true });
+      if (isVideo) (el as HTMLVideoElement).play().catch(() => {});
+      lbOpen = false;
+      return;
+    }
     sfx.tick();
     const m1 = map(pres.getBoundingClientRect()); // re-measure: layout may have shifted
     delete lb.dataset.open;
