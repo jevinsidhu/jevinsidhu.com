@@ -1,19 +1,29 @@
 ---
+/* The Facets of Quality, set as a definition list rather than cards: term in
+   the left column, the promise beside it, hairlines only between the rows.
+   Same ledger language as the Detail specimens further down the section. */
 interface Props { items: { title: string; desc: string }[] }
 const { items } = Astro.props;
 ---
-<div class="grid">
+<dl class="facets">
   {items.map((f) => (
-    <div data-shine="soft" class="cell">
-      <div class="t">{f.title}</div>
-      <div class="d">{f.desc}</div>
+    <div class="row">
+      <dt>{f.title}</dt>
+      <dd>{f.desc}</dd>
     </div>
   ))}
-</div>
+</dl>
+
 <style>
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 22px 0 26px; }
-  .cell { position: relative; overflow: hidden; border: 1.5px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--card); }
-  .t { font: 600 16px var(--font-sans); color: var(--ink); }
-  .d { font: 13px/1.55 var(--font-sans); color: var(--t3); margin-top: 5px; }
-  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+  .facets { margin: 20px 0 30px; }
+  .row {
+    display: grid; grid-template-columns: 136px minmax(0, 1fr); gap: 20px;
+    align-items: baseline; padding: 13px 0;
+  }
+  .row + .row { border-top: 1px solid var(--line2); }
+  dt { font: 600 15.5px var(--font-sans); color: var(--ink); }
+  dd { font: 14.5px/1.65 var(--font-sans); color: var(--t2); margin: 0; text-wrap: pretty; }
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 1fr; gap: 4px; padding: 12px 0; }
+  }
 </style>

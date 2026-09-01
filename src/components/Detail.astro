@@ -19,8 +19,10 @@ const { n, title, flip = false, wide = false } = Astro.props;
 <style>
   .detail {
     display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 30px;
-    align-items: start; padding: 34px 0 38px; border-top: 1px solid var(--line2); margin-top: 6px;
+    align-items: start; padding: 34px 0 38px;
   }
+  /* hairlines BETWEEN specimens only — no rule above the first row */
+  .detail + .detail { border-top: 1px solid var(--line2); margin-top: 6px; }
   .detail.flip { grid-template-columns: 300px minmax(0, 1fr); }
   .detail.flip .dt { order: 2; }
   .detail.flip .dm { order: 1; }
