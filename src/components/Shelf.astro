@@ -3,7 +3,7 @@
    that auto-scrolls in a seamless loop (duplicated set; initShelf measures
    the loop width and paces the glide). Pauses on hover so cards can be
    tapped into the lightbox. Reduced motion: a static scrollable row. */
-interface Props { items: { src: string; alt: string }[]; label?: string }
+interface Props { items: { src: string; alt: string; w?: number; h?: number }[]; label?: string }
 const { items, label } = Astro.props;
 ---
 <div class="shelf-wrap">
@@ -12,12 +12,12 @@ const { items, label } = Astro.props;
     <div class="track">
       <div class="set">
         {items.map((it) => (
-          <figure class="card"><img src={it.src} alt={it.alt} loading="lazy" decoding="async" draggable="false" /></figure>
+          <figure class="card"><img src={it.src} alt={it.alt} width={it.w} height={it.h} loading="lazy" decoding="async" draggable="false" /></figure>
         ))}
       </div>
       <div class="set" aria-hidden="true">
         {items.map((it) => (
-          <figure class="card"><img src={it.src} alt="" loading="lazy" decoding="async" draggable="false" /></figure>
+          <figure class="card"><img src={it.src} alt="" width={it.w} height={it.h} loading="lazy" decoding="async" draggable="false" /></figure>
         ))}
       </div>
     </div>

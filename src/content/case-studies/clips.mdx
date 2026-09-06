@@ -48,6 +48,18 @@ import GemDoodle from '../../components/GemDoodle.astro';
   <Figure src="/media/clips/entry-profile.jpg" grow={1.96} alt="A Clips review card on the creator's profile page" caption="A nudge appears on the creator dashboard" />
 </Row>
 
+<Shelf items={[
+  { src: '/media/clips/wild-1.jpg', w: 900, h: 1222, alt: 'A Quip sharing a Clip from a watercolour painting video' },
+  { src: '/media/clips/wild-2.jpg', w: 900, h: 1012, alt: 'A Quip sharing a Clip from a creator interview' },
+  { src: '/media/clips/wild-3.jpg', w: 900, h: 856, alt: 'A Quip sharing a Clip from a recorded live stream' },
+  { src: '/media/clips/wild-4.jpg', w: 900, h: 806, alt: 'A Quip sharing a Clip from a theme park ride video' },
+  { src: '/media/clips/wild-5.jpg', w: 900, h: 742, alt: 'A Quip sharing a Clip from a watercolour landscape video' },
+  { src: '/media/clips/wild-6.jpg', w: 900, h: 758, alt: 'A Quip sharing a Clip from an actual-play tabletop episode' },
+  { src: '/media/clips/wild-7.jpg', w: 900, h: 764, alt: 'A Quip sharing a Clip from a guitar lesson' },
+  { src: '/media/clips/wild-8.jpg', w: 900, h: 758, alt: 'A Quip sharing a Clip from a sketchbook painting video' },
+  { src: '/media/clips/wild-9.jpg', w: 900, h: 1008, alt: 'A Quip sharing a Clip from a fashion history video' },
+]} />
+
 <Section id="s1" principle={1} title="Build prototypes I could unwind">
   <p>There was urgency to learn quickly, while avoiding engineering decisions that would be painful to reverse. I created a prototyped implementation that would not scale, but would allow me to test the product hypothesis with a small cohort: suggestions from an LLM could help creators turn long-form video into Clips without taking creative control away from them.</p>
   <p>Code is cheap, but data and APIs are expensive. A polluted database, a mobile endpoint a team has to support forever, or a contract we depend on is hard to rollback. I avoided durable client contracts, skipped unnecessary new enums, stood up resources we could tear down, and kept prototype data out of the main database. I kept production rigor while delaying permanent commitments until the product had earned them. There were zero incidents associated with this work and all prototype code was cleaned up before the Alpha rollout.</p>
