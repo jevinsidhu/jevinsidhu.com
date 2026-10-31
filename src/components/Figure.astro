@@ -19,7 +19,7 @@ const isVideo = src?.endsWith('.mp4') || src?.endsWith('.webm');
 <figure class:list={['fig', { fill }]} style={grow ? `flex-grow:${grow}` : undefined}>
   {isVideo && (
     <div class="vshell">
-      <video src={src} poster={poster} muted loop playsinline preload="metadata" width={width}></video>
+      <video src={src} poster={poster} muted loop playsinline preload="none" width={width}></video>
       {poster && <img class="vposter" src={poster} alt="" aria-hidden="true" loading="lazy" decoding="async" />}
     </div>
   )}

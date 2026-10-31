@@ -39,7 +39,9 @@ const { title, subtitle, thumb, og, press, toc } = study.data;
   .back {
     position: fixed; top: 20px; left: 50px; /* centers with the stuck TOC pill (46.5px tall at top:14) */ z-index: 40; display: flex; align-items: center; gap: 8px;
     font: 500 13px var(--font-sans); color: rgba(var(--inkrgb), .6); text-decoration: none;
-    background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    /* near-opaque tint instead of backdrop-filter: these pills sit over the
+       animating hero and scrolling text, so a blur would re-render every frame */
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
     border: 1px solid rgba(var(--inkrgb), .12); border-radius: 99px; padding: 8px 16px 8px 13px;
     transition: color .2s, border-color .2s;
   }
@@ -47,7 +49,7 @@ const { title, subtitle, thumb, og, press, toc } = study.data;
   .share {
     position: fixed; top: 20px; right: 50px; z-index: 40; cursor: pointer; box-sizing: border-box;
     font: 500 13px var(--font-sans); color: rgba(var(--inkrgb), .6);
-    background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
     border: 1px solid rgba(var(--inkrgb), .12); border-radius: 99px; padding: 8px 16px;
     display: flex; align-items: center; white-space: nowrap;
     transition: color .2s, border-color .2s, width .3s ease;

@@ -23,7 +23,10 @@ const { items } = Astro.props;
   .toc[data-stuck='1'] .bg { opacity: 1; }
   .pill {
     position: relative; padding: 5px; border-radius: 99px;
-    background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    /* No backdrop-filter: a blur over scrolling content re-renders every frame
+       (same reasoning as the palette panel). A near-opaque tint of the page
+       colour reads the same frosted way. */
+    background: color-mix(in srgb, var(--bg) 93%, transparent);
     border: 1px solid rgba(var(--inkrgb), .1); box-shadow: 0 6px 24px rgba(60,40,20,.1); overflow: hidden; pointer-events: auto;
     max-width: calc(100vw - 24px);
   }
@@ -31,7 +34,10 @@ const { items } = Astro.props;
      capsule itself stays solid */
   .rail { position: relative; display: flex; align-items: center; gap: 2px; overflow-x: auto; scrollbar-width: none; border-radius: 99px; }
   .rail::-webkit-scrollbar { display: none; }
-  .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(var(--accrgb), .14); pointer-events: none; z-index: 1; }
+  /* progress = scaleX on a full-width bar (compositor-only; animating width
+     forced a layout on every scroll frame). post.ts sizes it to the rail's
+     scroll width so it still spans the overflow on mobile. */
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; transform-origin: 0 50%; transform: scaleX(0); background: rgba(var(--accrgb), .14); pointer-events: none; z-index: 1; }
   .fr {
     position: relative; z-index: 2; padding: 7px 13px; border-radius: 99px; cursor: pointer; white-space: nowrap;
     background: transparent; border: 0; transition: background .2s;

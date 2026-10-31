@@ -1,6 +1,8 @@
 ---
 /* A row of muted looping videos in phone frames (square or portrait), each
-   with a small label. Videos play only while on screen (post.ts). */
+   with a small label. Videos play only while on screen (post.ts), and are
+   preload="none" so a page full of them doesn't spin up every media pipeline
+   during the page morph — post.ts starts each load as it nears the viewport. */
 interface Props {
   items: { src: string; poster: string; label?: string; portrait?: boolean }[];
   size?: 'sm' | 'md';
@@ -11,7 +13,7 @@ const { items, size = 'md' } = Astro.props;
   {items.map((it) => (
     <figure class:list={['ph', { portrait: it.portrait }]} data-shine="soft">
       <div class="frame">
-        <video src={it.src} poster={it.poster} muted loop playsinline preload="metadata"></video>
+        <video src={it.src} poster={it.poster} muted loop playsinline preload="none"></video>
         <img class="vposter" src={it.poster} alt="" aria-hidden="true" loading="lazy" decoding="async" />
       </div>
       {it.label && <figcaption>{it.label}</figcaption>}

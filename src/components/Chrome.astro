@@ -76,10 +76,12 @@
     :global(html[data-chrome-hidden]) #sndBtn, :global(html[data-chrome-hidden]) #palBtn,
     :global(html[data-chrome-hidden]) #btnDock, :global(html[data-chrome-hidden]) #palPanel { transform: translateY(130px); }
     :global(html[data-chrome-hidden]) #topBtn { transform: translateY(130px) !important; }
+    /* The dock and top button are frosted with a near-opaque page tint, not a
+       backdrop blur: on a phone every scrolled frame would otherwise be
+       re-blurred under them, right where the palette is tapped. */
     #topBtn {
       right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 52px; height: 52px;
-      background: color-mix(in srgb, var(--bg) 78%, transparent);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
       border: 1px solid rgba(var(--inkrgb), .12); box-shadow: 0 6px 24px rgba(60, 40, 20, .12);
       transition: opacity .3s ease, transform .35s ease, color .2s, background .2s;
     }
@@ -88,8 +90,7 @@
     #btnDock {
       display: block; position: fixed; z-index: 69;
       left: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: 114px; height: 60px;
-      border-radius: 99px; background: color-mix(in srgb, var(--bg) 78%, transparent);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-radius: 99px; background: color-mix(in srgb, var(--bg) 92%, transparent);
       border: 1px solid rgba(var(--inkrgb), .12); box-shadow: 0 6px 24px rgba(60, 40, 20, .12);
     }
     #palPanel { left: 12px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); width: min(352px, calc(100vw - 24px)); transform-origin: 78px calc(100% + 44px); }

@@ -1,10 +1,12 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import '@fontsource/geist/400.css';
-import '@fontsource/geist/500.css';
-import '@fontsource/geist/600.css';
-import '@fontsource/geist-mono/400.css';
-import '@fontsource/geist-mono/500.css';
+// Latin subsets only: the full index files declare every script (cyrillic,
+// vietnamese, symbols…) and swelled the page stylesheet to ~84KB of @font-face.
+import '@fontsource/geist/latin-400.css';
+import '@fontsource/geist/latin-500.css';
+import '@fontsource/geist/latin-600.css';
+import '@fontsource/geist-mono/latin-400.css';
+import '@fontsource/geist-mono/latin-500.css';
 import '@fontsource-variable/newsreader';
 import '../styles/global.css';
 import Chrome from '../components/Chrome.astro';

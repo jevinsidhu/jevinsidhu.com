@@ -58,17 +58,33 @@ export function initCursor(lc: HTMLElement) {
     lc.dataset.state = t?.closest?.(HOT) ? 'hover' : '';
   });
   // During a view transition the live element is hidden under the snapshot
-  // layer; steer its pseudo-element group from the pointer instead.
+  // layer; steer its pseudo-element group from the pointer instead. The rule
+  // is edited through the CSSOM (one declaration) rather than by rewriting
+  // the <style>'s text, which re-parsed the sheet every frame of the morph.
   const vtStyle = document.createElement('style');
   document.head.appendChild(vtStyle);
+  let vtRule: CSSStyleRule | null = null, vtUnsupported = false;
+  const leafRule = () => {
+    if (vtUnsupported) return null;
+    if (!vtStyle.isConnected) { document.head.appendChild(vtStyle); vtRule = null; } // a page swap drops it
+    const sheet = vtStyle.sheet;
+    if (!sheet) return null;
+    if (!vtRule || sheet.cssRules.length === 0) {
+      // a browser without view transitions rejects the selector; the fallback
+      // navigation has no snapshot layer, so there is nothing to steer anyway
+      try { sheet.insertRule('::view-transition-group(leaf){}', 0); vtRule = sheet.cssRules[0] as CSSStyleRule; }
+      catch { vtUnsupported = true; return null; }
+    }
+    return vtRule;
+  };
+  let lastT = '';
   const loop = () => {
     x += (mx - x) * 0.3; y += (my - y) * 0.3;
     const t = `translate(${x - 20}px,${y - 14}px)`;
-    lc.style.transform = t;
+    if (t !== lastT) { lastT = t; lc.style.transform = t; } // idle pointer → no style write
     if (document.documentElement.dataset.vt) {
-      if (!vtStyle.isConnected) document.head.appendChild(vtStyle);
-      vtStyle.textContent = `::view-transition-group(leaf){transform:${t} !important}`;
-    } else if (vtStyle.textContent) vtStyle.textContent = '';
+      leafRule()?.style.setProperty('transform', t, 'important');
+    } else if (vtRule?.style.transform) { vtRule.style.removeProperty('transform'); }
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);

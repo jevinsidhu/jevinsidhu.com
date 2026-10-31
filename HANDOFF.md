@@ -132,6 +132,18 @@ favicon-32.png / apple-touch-icon.png / favicon.ico regenerated 2026-08-24: "JS"
 8. **DNS at Namecheap (dashboard, one-time)**: replace GitHub Pages records with `@ A 76.76.21.21` and `www CNAME cname.vercel-dns.com`; verify with `dig jevinsidhu.com`. Then disable Pages on the old `jevinsidhu/jevin-site` repo (leave the repo).
 9. Lighthouse ≥ 95 on `/` and `/clips`.
 
+## Performance pass (2026-10-31)
+
+Jevin reported dropped frames on the palette tap and on the home → Clips morph. Profiled with Chrome traces (puppeteer-core + CDP, desktop headful with the real GPU and an iPhone 15 Pro emulation at 4× CPU) plus an in-page Long-Animation-Frames harness in Dia. **The main thread was nearly idle during the stalls (tasks <3 ms); the 200–325 ms hitches were in the GPU process** — `SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass` + Dawn pipeline compiles — caused by exotic paint pipelines on the hot paths. Load metrics were already perfect (Lighthouse 100, TBT 0), so this was all runtime smoothness. What changed, and the rules that fall out of it:
+
+- **No `mix-blend-mode`, animated `clip-path`, `filter`, `backdrop-filter` or `mask-image` on anything that animates or sits over animating content.** The theme sweep is now a transform-scaled disc (`theme.ts`), unseated palette tiles dim with a `.shade` overlay instead of `filter: saturate() brightness()`, the Back/Copy-link/TOC pills and the mobile dock use a 92–93 % `--bg` tint instead of a backdrop blur (the panel already did), and the shelf's edge fades are two `--bg` gradients on `.shelf-wrap::before/::after` instead of a mask over the endlessly-gliding track.
+- **Loop videos are `preload="none"`** (`Phones`, `Figure`); the player has no `autoplay` attribute and `preload="none"`. `post.ts` / `gadgets.ts` start their loads from the IntersectionObservers **after `onSettled()`**, so the morph no longer competes with sixteen media pipelines (1 mp4 requested at swap instead of 16). Behaviour is unchanged: loops still autoplay muted on view, the player still ambient-plays.
+- **Scroll handlers read geometry first, then write only what changed** (`initToc`, `initRecede`, the hero loop, which also pauses via IO when the band is off screen). TOC progress and the player's progress bar are `transform: scaleX()` on a sized bar, not `width`. `initShelf` coalesces its 18 image-load `pace()` calls into one rAF. Interaction bindings that force layout (shine, lightbox, share-pill measurement) run after settle.
+- `cursor.ts` steers `::view-transition-group(leaf)` via a CSSOM rule edit, not by rewriting the `<style>` text each frame.
+- Fonts import the `latin-*` subset files only (page CSS 84 KB → 15 KB).
+
+Measured (same scenarios, before → after): desktop Chrome palette open on Clips 267 → 10 ms max frame gap, theme select 192 → 9 ms, home → Clips morph 321 → 50 ms, Clips scroll 250 → 9 ms; phone emulation scroll 167 → 17 ms, morph jank 334 → 167 ms. In Dia (warm profile) every palette open/select on both pages is now 0 frames over 20 ms. The one thing left: in a **fresh** Chrome profile the first-ever palette select still pays a one-time ~230 ms GPU shader compile (not reproducible in a warm browser), and the first click of a page load creates the AudioContext (6 ms in Dia, ~110 ms in a cold headful Chrome).
+
 ## Decisions already made by Jevin (don't re-ask)
 
 Astro over Next.js/React Router · Vercel over Cloudflare/GitHub Pages · new repo + new folder (old `~/Desktop/jevin-site` untouched) · proper mobile layout in v1 · videos in `/public` (not R2) · no CMS.

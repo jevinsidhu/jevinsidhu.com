@@ -8,10 +8,15 @@ import { initCursor, leafSpin, leafFace } from './cursor';
 const $ = (id: string) => document.getElementById(id)!;
 
 /* ---- theme card tile (the little "memory card") ---- */
-const CARD_TRANSITION = 'transform .38s cubic-bezier(.34,1.4,.4,1),filter .38s,opacity .26s ease-out,scale .42s cubic-bezier(.34,1.45,.4,1)';
+const CARD_TRANSITION = 'transform .38s cubic-bezier(.34,1.4,.4,1),opacity .26s ease-out,scale .42s cubic-bezier(.34,1.45,.4,1)';
+const CARD_RADIUS = '10% 10% 8% 8%/8% 8% 6% 6%';
 function themeCard(acc: string, name: string, w: number) {
   const h = w * 1.3, c = document.createElement('div');
-  c.style.cssText = `position:absolute;width:${w}px;height:${h}px;cursor:pointer;transition:${CARD_TRANSITION};will-change:transform,opacity,filter,scale;transform-origin:50% 60%`;
+  // Only compositor-animated properties here (transform/opacity/scale). The
+  // unseated tiles used to dim via `filter: saturate() brightness()`, which
+  // gives each tile its own GPU render pass; the .shade overlay below does
+  // the same dimming with a plain opacity fade.
+  c.style.cssText = `position:absolute;width:${w}px;height:${h}px;cursor:pointer;transition:${CARD_TRANSITION};will-change:transform,opacity,scale;transform-origin:50% 60%`;
   c.innerHTML =
     `<div style="pointer-events:none;position:absolute;inset:0;border-radius:10% 10% 8% 8%/8% 8% 6% 6%;background:linear-gradient(158deg,color-mix(in srgb,${acc} 38%,transparent) 0%,color-mix(in srgb,${acc} 56%,transparent) 52%,color-mix(in srgb,${acc} 72%,rgba(0,0,0,.22)) 100%);border:1.5px solid color-mix(in srgb,${acc} 68%,rgba(0,0,0,.28));box-shadow:0 ${w * 0.16}px ${w * 0.4}px rgba(20,15,8,.28),inset 0 1.5px 0 rgba(255,255,255,.5),inset -2px -3px 6px color-mix(in srgb,${acc} 55%,rgba(0,0,0,.28))"></div>` +
     `<div style="pointer-events:none;position:absolute;inset:16% 14% 26%;background-image:radial-gradient(circle 1.1px,rgba(255,255,255,.32) 1px,transparent 1.8px);background-size:${w * 0.13}px ${w * 0.13}px;opacity:.45"></div>` +
@@ -19,7 +24,9 @@ function themeCard(acc: string, name: string, w: number) {
     `<div style="pointer-events:none;position:absolute;top:19%;left:0;right:0;text-align:center;font:600 ${Math.max(7, w * 0.155)}px var(--font-sans);color:rgba(255,255,255,.94);text-shadow:0 1px 1.5px rgba(0,0,0,.22)">${name.toUpperCase()}</div>` +
     `<div style="pointer-events:none;position:absolute;top:37%;left:0;right:0;text-align:center;font:500 ${Math.max(4.5, w * 0.068)}px var(--font-mono);color:rgba(255,255,255,.6);letter-spacing:.14em">MEMORY CARD</div>` +
     `<div style="pointer-events:none;position:absolute;bottom:0;left:0;right:0;height:15%;border-radius:0 0 10% 10%/0 0 42% 42%;background:repeating-linear-gradient(90deg,color-mix(in srgb,${acc} 68%,rgba(0,0,0,.26)) 0 ${w * 0.055}px,color-mix(in srgb,${acc} 46%,transparent) ${w * 0.055}px ${w * 0.11}px)"></div>` +
-    `<div style="pointer-events:none;position:absolute;inset:0;border-radius:10% 10% 8% 8%/8% 8% 6% 6%;background:linear-gradient(112deg,transparent 30%,rgba(255,255,255,.22) 44%,rgba(255,255,255,.05) 52%,transparent 60%)"></div>`;
+    `<div style="pointer-events:none;position:absolute;inset:0;border-radius:${CARD_RADIUS};background:linear-gradient(112deg,transparent 30%,rgba(255,255,255,.22) 44%,rgba(255,255,255,.05) 52%,transparent 60%)"></div>` +
+    // dimming shade for unseated tiles (stands in for saturate(.5) brightness(.55))
+    `<div class="shade" style="pointer-events:none;position:absolute;inset:0;border-radius:${CARD_RADIUS};background:rgba(38,28,24,.5);opacity:0;transition:opacity .38s"></div>`;
   return c;
 }
 
@@ -55,7 +62,8 @@ function initPalette() {
   const CH = CW * 1.3, shelfY = (H - CH) / 2;
 
   const bloom = document.createElement('div');
-  bloom.style.cssText = `position:absolute;top:${shelfY + CH / 2 - 72}px;width:144px;height:144px;border-radius:50%;transition:left .5s cubic-bezier(.4,1.2,.4,1),background .5s;pointer-events:none;z-index:1`;
+  // glides with transform (compositor) rather than `left` (layout every frame)
+  bloom.style.cssText = `position:absolute;left:0;top:${shelfY + CH / 2 - 72}px;width:144px;height:144px;border-radius:50%;transition:transform .5s cubic-bezier(.4,1.2,.4,1),background .5s;pointer-events:none;z-index:1`;
   tray.appendChild(bloom);
 
   let sweepT = 0;
@@ -64,10 +72,11 @@ function initPalette() {
     clearTimeout(sweepT);
     tIdx = i;
     cards.forEach((x, j) => {
-      if (j === i) { x.style.transform = 'scale(1.1)'; x.style.filter = ''; x.style.opacity = '1'; x.style.zIndex = '3'; }
-      else { x.style.transform = ''; x.style.filter = 'saturate(.5) brightness(.55)'; x.style.opacity = '.85'; x.style.zIndex = '2'; }
+      const shade = x.querySelector<HTMLElement>('.shade')!;
+      if (j === i) { x.style.transform = 'scale(1.1)'; shade.style.opacity = '0'; x.style.opacity = '1'; x.style.zIndex = '3'; }
+      else { x.style.transform = ''; shade.style.opacity = '1'; x.style.opacity = '.85'; x.style.zIndex = '2'; }
     });
-    bloom.style.left = `${rowX(i) + CW / 2 - 72}px`;
+    bloom.style.transform = `translateX(${rowX(i) + CW / 2 - 72}px)`;
     bloom.style.background = `radial-gradient(closest-side,color-mix(in srgb,${THEMES[i].acc} 52%,transparent),transparent 72%)`;
     if (!animate) { applyTheme(document.documentElement, i); return; }
     leafSpin();
@@ -143,20 +152,26 @@ function initNavigation() {
 
 /* ---- receding chrome (mobile): hide on scroll down, show on scroll up ---- */
 function initRecede() {
-  let lastY = scrollY;
+  let lastY = scrollY, shown = false;
   const top = $('topBtn');
+  const narrow = matchMedia('(max-width: 780px)'); // one MediaQueryList, not one per scroll event
+  const root = document.documentElement;
   top.addEventListener('click', () => { sfx.tick(); scrollTo({ top: 0, behavior: 'smooth' }); });
+  // Every attribute write here is guarded: this runs on each scroll frame,
+  // and redundant writes still schedule style work on <html>.
+  const hide = (on: boolean) => { if (on !== ('chromeHidden' in root.dataset)) { if (on) root.dataset.chromeHidden = '1'; else delete root.dataset.chromeHidden; } };
   const onScroll = () => {
-    top.toggleAttribute('data-show', scrollY > 600);
-    if (!matchMedia('(max-width: 780px)').matches) { delete document.documentElement.dataset.chromeHidden; lastY = scrollY; return; }
-    const dy = scrollY - lastY;
+    const y = scrollY;
+    if ((y > 600) !== shown) { shown = y > 600; top.toggleAttribute('data-show', shown); }
+    if (!narrow.matches) { hide(false); lastY = y; return; }
+    const dy = y - lastY;
     if (Math.abs(dy) < 6) return;
-    if (dy > 0 && scrollY > 140) document.documentElement.dataset.chromeHidden = '1';
-    else if (dy < 0 || scrollY <= 140) delete document.documentElement.dataset.chromeHidden;
-    lastY = scrollY;
+    if (dy > 0 && y > 140) hide(true);
+    else if (dy < 0 || y <= 140) hide(false);
+    lastY = y;
   };
   window.addEventListener('scroll', onScroll, { passive: true });
-  document.addEventListener('astro:after-swap', () => { delete document.documentElement.dataset.chromeHidden; lastY = 0; top.removeAttribute('data-show'); });
+  document.addEventListener('astro:after-swap', () => { hide(false); lastY = 0; shown = false; top.removeAttribute('data-show'); });
 }
 
 /* ---- boot once ---- */

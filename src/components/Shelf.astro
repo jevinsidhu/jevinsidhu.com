@@ -27,19 +27,25 @@ const { items, label } = Astro.props;
 <style>
   .shelf-wrap {
     --sw: min(1100px, calc(100vw - 48px));
-    width: var(--sw);
+    width: var(--sw); position: relative;
     margin: 72px calc((100% - var(--sw)) / 2) 0;
   }
+  /* Edge fades as two page-coloured gradients painted over the ends. (A
+     mask-image here made the GPU render the whole shelf to an offscreen
+     surface and re-mask it on every frame of the endless glide.) They sit on
+     the wrap, not the scroller, so they stay put when reduced-motion turns
+     the shelf into a scrollable row. */
+  .shelf-wrap::before, .shelf-wrap::after {
+    content: ''; position: absolute; top: 0; bottom: 0; width: 34px; z-index: 2; pointer-events: none;
+  }
+  .shelf-wrap::before { left: 0; background: linear-gradient(90deg, var(--bg), transparent); }
+  .shelf-wrap::after { right: 0; background: linear-gradient(270deg, var(--bg), transparent); }
   .shelf-label {
     display: flex; align-items: baseline; justify-content: space-between;
     font: 600 13px var(--font-sans); color: var(--t3); margin: 0 6px 14px;
   }
   .shelf-label .hint { font: 11px var(--font-mono); color: var(--t5); }
-  .shelf {
-    overflow: hidden; padding: 18px 0 12px;
-    mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent);
-  }
+  .shelf { overflow: hidden; padding: 18px 0 12px; }
   .track { display: flex; gap: 18px; width: max-content; animation: shelfloop var(--loopdur, 60s) linear infinite; }
   .shelf:has(.card:hover) .track, :global(html[data-lb]) .track { animation-play-state: paused; }
   .shelf[data-nohover] .track { animation-play-state: running; }

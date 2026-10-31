@@ -30,16 +30,23 @@ export function saveTheme(idx: number) {
   try { localStorage.setItem(THEME_KEY, THEMES[idx].id); } catch {}
 }
 
-/** Translucent tinted wavefront expanding from (x,y), fading as it grows. */
+/** Translucent tinted wavefront expanding from (x,y), fading as it grows.
+    A disc big enough to cover the viewport from (x,y), grown with transform
+    and faded with opacity — both compositor-only. (The earlier version
+    animated clip-path over a full-viewport mix-blend-mode layer, which made
+    the GPU re-render a viewport-sized mask + blend pass every frame and
+    stalled 200–300ms on each theme pick.) The gradient reaches transparent
+    well inside the disc, so no edge ever shows. */
 export function sweepFrom(x: number, y: number, acc: string) {
+  const R = Math.ceil(Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)));
   const s = document.createElement('div');
   s.style.cssText =
-    `position:fixed;inset:0;z-index:90;pointer-events:none;mix-blend-mode:multiply;opacity:.9;` +
-    `background:radial-gradient(circle at ${x}px ${y}px,color-mix(in srgb,${acc} 26%,transparent),color-mix(in srgb,${acc} 10%,transparent) 45%,transparent 70%);` +
-    `clip-path:circle(0px at ${x}px ${y}px);transition:clip-path .65s cubic-bezier(.4,0,.3,1),opacity .65s ease;will-change:clip-path,opacity;contain:strict`;
+    `position:fixed;left:${x - R}px;top:${y - R}px;width:${R * 2}px;height:${R * 2}px;z-index:90;pointer-events:none;opacity:.9;` +
+    `background:radial-gradient(circle closest-side,color-mix(in srgb,${acc} 26%,transparent),color-mix(in srgb,${acc} 10%,transparent) 45%,transparent 70%);` +
+    `transform:scale(0);transition:transform .65s cubic-bezier(.4,0,.3,1),opacity .65s ease;will-change:transform,opacity;contain:strict`;
   document.body.appendChild(s);
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    s.style.clipPath = `circle(160% at ${x}px ${y}px)`;
+    s.style.transform = 'scale(1)';
     s.style.opacity = '0';
   }));
   setTimeout(() => s.remove(), 700);

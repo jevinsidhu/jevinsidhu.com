@@ -2,8 +2,9 @@
    fullscreen viewer (a FLIP lightbox — the asset lifts out of the page to
    the centre of the screen and settles back into its spot on close). */
 import { sfx } from './audio';
+import { onSettled } from './settle';
 
-const q = <T extends HTMLElement>(root: ParentNode, sel: string) => root.querySelector<T>(sel)!;
+const q =<T extends HTMLElement>(root: ParentNode, sel: string) => root.querySelector<T>(sel)!;
 const qa = <T extends HTMLElement>(root: ParentNode, sel: string) => [...root.querySelectorAll<T>(sel)];
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -14,13 +15,14 @@ const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
    into muted ambient play and offers the pill again. */
 function initPlayer(p: HTMLElement) {
   const v = q<HTMLVideoElement>(p, 'video'), fill = q(p, '[data-fill]'), time = q(p, '[data-time]');
-  let userPaused = false;
+  let userPaused = false, lastTime = '';
   const paint = () => {
     p.toggleAttribute('data-playing', !v.paused);
     p.toggleAttribute('data-muted', v.muted);
     if (v.duration) {
-      fill.style.width = `${(v.currentTime / v.duration) * 100}%`;
-      time.textContent = `${fmt(v.currentTime)} / ${fmt(v.duration)}`;
+      fill.style.transform = `scaleX(${v.currentTime / v.duration})`; // compositor-only; width forced layout 4×/s
+      const t = `${fmt(v.currentTime)} / ${fmt(v.duration)}`;
+      if (t !== lastTime) { lastTime = t; time.textContent = t; } // the text only changes once a second
     }
   };
   // Sound is opt-in per visit: a previous unmute must never carry over.
@@ -59,10 +61,14 @@ function initPlayer(p: HTMLElement) {
   });
   // Ambient rules with hysteresis: start once half the player is visible,
   // pause once it's nearly gone — and respect a reader's manual pause.
-  new IntersectionObserver((es) => es.forEach((en) => {
+  const io = new IntersectionObserver((es) => es.forEach((en) => {
     if (en.intersectionRatio >= 0.5) { if (!userPaused) v.play().catch(() => {}); }
     else if (en.intersectionRatio <= 0.15 && !v.paused) v.pause();
-  }), { threshold: [0.15, 0.5] }).observe(p);
+  }), { threshold: [0.15, 0.5] });
+  // The video is preload="none" with no autoplay attribute: its download and
+  // decoder start here, once the page morph has landed (at once on a direct
+  // visit), instead of competing with the slices mid-flight.
+  onSettled(() => { if (!document.body.contains(v)) return; v.preload = 'auto'; io.observe(p); });
 }
 
 /* ---- fullscreen viewer ----
@@ -325,14 +331,20 @@ function openViewer(el: HTMLImageElement | HTMLVideoElement) {
 function initShelf(shelf: HTMLElement) {
   const track = q<HTMLElement>(shelf, '.track');
   const set = q<HTMLElement>(shelf, '.set');
+  let loopW = 0, queued = 0;
   const pace = () => {
     const w = set.offsetWidth + 18; // one set + the gap between sets
+    if (w === loopW) return; // the cards carry width/height, so image loads don't move it
+    loopW = w;
     track.style.setProperty('--loopw', `${w}px`);
     track.style.setProperty('--loopdur', `${Math.max(20, w / 38)}s`); // ~38px/s
   };
+  // Eighteen image `load` events land during the page morph; measure once per
+  // frame rather than forcing a layout for each of them.
+  const repace = () => { if (!queued) queued = requestAnimationFrame(() => { queued = 0; pace(); }); };
   pace();
-  window.addEventListener('resize', pace);
-  shelf.querySelectorAll('img').forEach((im) => im.addEventListener('load', pace));
+  window.addEventListener('resize', repace);
+  shelf.querySelectorAll('img').forEach((im) => im.addEventListener('load', repace));
   // After a lightbox lands, the cursor still rests on the card it came from —
   // keep gliding and ignore hover entirely until the pointer LEAVES the
   // shelf (moving around inside it must not re-pause the loop).
@@ -381,5 +393,7 @@ export function initGadgets(root: ParentNode) {
   qa(root, '[data-player]').forEach(initPlayer);
   qa(root, '[data-sketch]').forEach(initSketch);
   qa(root, '[data-shelf]').forEach(initShelf);
-  initLightbox(root as HTMLElement);
+  // Tap-to-enlarge bindings (forty attribute writes) aren't usable until the
+  // morph has landed anyway; keep them out of the swap frame.
+  onSettled(() => initLightbox(root as HTMLElement));
 }
