@@ -60,13 +60,13 @@ import GemDoodle from '../../components/GemDoodle.astro';
   { src: '/media/clips/wild-9.jpg', w: 900, h: 1008, alt: 'A Quip sharing a Clip from a fashion history video' },
 ]} />
 
-<Section id="s1" principle={1} title="Build prototypes I could unwind">
+<Section id="s1" title="Build prototypes I could unwind">
   <p>There was urgency to learn quickly, while avoiding engineering decisions that would be painful to reverse. I created a prototyped implementation that would not scale, but would allow me to test the product hypothesis with a small cohort: suggestions from an LLM could help creators turn long-form video into Clips without taking creative control away from them.</p>
   <p>Code is cheap, but data and APIs are expensive. A polluted database, a mobile endpoint a team has to support forever, or a contract we depend on is hard to rollback. I avoided durable client contracts, skipped unnecessary new enums, stood up resources we could tear down, and kept prototype data out of the main database. I kept production rigor while delaying permanent commitments until the product had earned them. There were zero incidents associated with this work and all prototype code was cleaned up before the Alpha rollout.</p>
   <ProtoSketch />
 </Section>
 
-<Section id="s2" principle={2} title="Leave authorship with the creator">
+<Section id="s2" title="Leave authorship with the creator">
   <p>Creators were open to tools that saved time, but were concerned about ones that took over creative judgment and used their work in unclear ways. That meant Clips could handle search and packaging, but creators must make the final publishing decision. This naturally shaped the product: Clips finds promising moments, makes them easy to review, and connects the output to Patreon’s existing creation and distribution surfaces.</p>
   <p>The core product decision was to make Clips feel like a natural extension of Quips, Patreon’s lightweight public posts that appear in the Home feed for existing fans and potential new audiences. Creators already understood the Quip composer as a place to make a lightweight post in the feed. They also understood you could attach artifacts from Patreon, like quoting a post or another Quip. Clips introduces highlights from their videos as another artifact. These are ultimately the creators’, so I also built a flow to download Clips locally.</p>
   <Row>
@@ -79,7 +79,7 @@ import GemDoodle from '../../components/GemDoodle.astro';
   <SignDoodle slot="note" top={720} />
 </Section>
 
-<Section id="s3" principle={3} title="Meet creators in their workflow">
+<Section id="s3" title="Meet creators in their workflow">
   <p>Within a month, I put Clips into a pilot with a small cohort of creators. I ran creator calls and understood that suggested Clips could feel like a natural next step after their publishing flow.</p>
   <h4>Leveraging push notifications</h4>
   <p>Clips meets creators in their workflow. After publishing a video, they received a push notification that deep links directly into the Clips library. The notification brings back creators when the system has something useful to show. If the pipeline failed, the creator can still publish; they just won’t receive Clip suggestions for that video.</p>
@@ -90,7 +90,7 @@ import GemDoodle from '../../components/GemDoodle.astro';
   <LensDoodle slot="note" top={1280} />
 </Section>
 
-<Section id="s4" principle={4} title="Let creator feedback reshape the product">
+<Section id="s4" title="Let creator feedback reshape the product">
   <ReshapeDoodle slot="note" top={920} />
   <p>Feedback moved the interface away from a swipe-up feed of videos. Creators wanted a library organized around source posts, which meant the API needed to expose source posts, per-post generation state, and intervals grouped by video. APIs are meant to be flexible and not just a 1:1 representative of the database layer. I kept the swipe-up viewer for quickly moving through suggestions after a creator taps into a Clip, but made the entry point feel more like a library.</p>
   <p>Every creator wanted review and editing before anything went live. One creator said even a millisecond off on the entry or exit point mattered, so I added pinch-to-zoom functionality for more granular trim control.</p>
@@ -100,7 +100,7 @@ import GemDoodle from '../../components/GemDoodle.astro';
   <p>The pilot was a lot less polished than the final version, but was an invaluable learning tool. For example, there was no library interface at first. Instead, it dropped you straight into the swipe-up viewer. Based on feedback, I iterated. Inside the viewer, the biggest design learning was simplify - less, but better.</p>
 </Section>
 
-<Section id="s5" principle={5} title="Build reusable foundations that scale">
+<Section id="s5" title="Build reusable foundations that scale">
   <RootsDoodle slot="note" top={230} />
   <p>After the pilot, I cleaned up the prototype path so Clips had one production reference in our repos. The project went through the detail-oriented launch process Patreon expects for any feature. I held engineering reviews and a product risk review. I also participated in design crits. Before launch, I created runbooks, dashboards for observability and a plan for experimentation and rollout.</p>
   <p>The production rewrite enabled me to build foundations beyond Clips. The backend models Clips as intervals from a source post so Clips can show up in other product surfaces. Chapters are an extension since they use titles and intervals, with the added constraint their intervals should not overlap. I wrote an LLM gateway for a typed, observable route to call multiple providers, track cost and latency by call site, validate structured outputs, and test prompt/model pairs against a golden set of videos. The focus of my work was writing a long-running, reliable pipeline that kept LLM calls out of the request path and maintained a list of auto-retrying failures. Each attempt writes to a ledger for bookkeeping. The remaining work was operational. I considered task timeouts and created a reaper for stuck generations. Clips become ready when interval rows are written. If Clip thumbnail generation is slow or fails, clients can fall back to the post thumbnail and still let the creator review the Clips.</p>
@@ -112,7 +112,7 @@ import GemDoodle from '../../components/GemDoodle.astro';
   <Figure src="/media/clips/eval-tool.mp4" poster="/media/clips/eval-tool-poster.jpg" />
 </Section>
 
-<Section id="s6" principle={6} title="Earn trust through the small details">
+<Section id="s6" title="Earn trust through the small details">
   <GemDoodle slot="note" top={200} />
   <p>I recently read Josh Puckett’s <a href="https://www.interfacecraft.dev/">Interface Craft</a>, where he writes about Facets of Quality: external characteristics you want people to experience when using your product.</p>
   <p>For Clips, my facets were:</p>
