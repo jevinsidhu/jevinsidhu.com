@@ -122,22 +122,22 @@ import GemDoodle from '../../components/GemDoodle.astro';
     { title: 'Quietly useful', desc: 'Clips should save creators time and the feature should not be the main character.' },
     { title: 'Native', desc: 'Clips should feel like it belongs in Patreon’s creation workflow.' },
   ]} />
-  <Detail n={1} title="Seen state entry point animation">
+  <Detail title="Seen state entry point animation">
     <p>If you haven’t seen this animation or your Clips yet, this will fire upon open the Quip composer to let you know there are new Clips awaiting your review.</p>
     <Phones slot="media" items={[{ src: '/media/clips/seen-anim.mp4', poster: '/media/clips/seen-anim-poster.jpg' }]} />
   </Detail>
-  <Detail n={2} title="Revising the Quip Composer" wide>
+  <Detail title="Revising the Quip Composer" wide>
     <p>A product designer, Nathan, and I worked together to revise the Quip composer. This project consolidated actions into a bottom toolbar, made disabled states clearer, reduced the visual weight of the old media buttons, and gave Clips a durable entry point. The new treatment ran as an experiment and was directionally positive: total posts and text-only Quips increased and image and video Quips stayed neutral. Instead of simply adding a Clip entry point to the existing composer, we improved the overall craft of the surface.</p>
     <Phones slot="media" items={[
       { src: '/media/clips/entry-old.mp4', poster: '/media/clips/entry-old-poster.jpg', label: 'Before' },
       { src: '/media/clips/entry-new.mp4', poster: '/media/clips/entry-new-poster.jpg', label: 'After' },
     ]} />
   </Detail>
-  <Detail n={3} title="New user experience" wide>
+  <Detail title="New user experience" wide>
     <p>I worked with another product designer, Justin, to create the new user experience.</p>
     <Phones slot="media" items={[{ src: '/media/clips/nux.mp4', poster: '/media/clips/nux-poster.jpg' }]} />
   </Detail>
-  <Detail n={4} title="Initial loading state" flip>
+  <Detail title="Initial loading state" flip>
     <p>In most cases, creators will publish a post and be prompted via notification to explore new clips. At this point, the view will be populated and once you have clips, the library will always show them. However, this screen may be their first impression of this feature, so I spent some time polishing here.</p>
     <Phones slot="media" items={[{ src: '/media/clips/loading.mp4', poster: '/media/clips/loading-poster.jpg' }]} />
     <Fragment slot="below">
@@ -148,14 +148,14 @@ import GemDoodle from '../../components/GemDoodle.astro';
       ]} />
     </Fragment>
   </Detail>
-  <Detail n={5} title="Download states" wide>
+  <Detail title="Download states" wide>
     <p>While the primary action is attaching to a Quip, it’s important creators can take their work off-platform by downloading a Clip.</p>
     <Phones slot="media" items={[
       { src: '/media/clips/download-states.mp4', poster: '/media/clips/download-states-poster.jpg', label: 'Exploration' },
       { src: '/media/clips/downloads.mp4', poster: '/media/clips/downloads-poster.jpg', label: 'Final' },
     ]} />
   </Detail>
-  <Detail n={6} title="Filter adjacent rows">
+  <Detail title="Filter adjacent rows">
     <p>Adjacent rows morph corner radii.</p>
     <Phones slot="media" items={[{ src: '/media/clips/filter.mp4', poster: '/media/clips/filter-poster.jpg' }]} />
   </Detail>

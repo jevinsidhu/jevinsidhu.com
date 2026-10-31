@@ -1,14 +1,13 @@
 ---
-/* A "specimen" row for the Craft section: numbered eyebrow + heading +
+/* A "specimen" row for the Craft section: heading +
    prose on one side, the demo media on the other, alternating sides down
    the section (flip). Hairline-separated so the set reads as a designed
    index of small details. Stacks on mobile. */
-interface Props { n: number; title: string; flip?: boolean; wide?: boolean }
-const { n, title, flip = false, wide = false } = Astro.props;
+interface Props { title: string; flip?: boolean; wide?: boolean }
+const { title, flip = false, wide = false } = Astro.props;
 ---
 <div class:list={['detail', { flip, wide }]}>
   <div class="dt">
-    <div class="eyebrow">Detail {String(n).padStart(2, '0')}</div>
     <h3>{title}</h3>
     <slot />
   </div>
@@ -26,7 +25,6 @@ const { n, title, flip = false, wide = false } = Astro.props;
   .detail.flip { grid-template-columns: 300px minmax(0, 1fr); }
   .detail.flip .dt { order: 2; }
   .detail.flip .dm { order: 1; }
-  .eyebrow { font: 600 12px var(--font-sans); letter-spacing: .02em; color: var(--acc); margin-bottom: 10px; }
   .dt h3 { font: 600 19px/1.3 var(--font-sans); letter-spacing: -.015em; color: var(--ink); margin: 0 0 10px; } /* .dt prefix out-ranks Section's global h3 margin */
   .dt :global(p) { font: 15.5px/1.75 var(--font-sans); color: var(--t1); margin: 0 0 14px; }
   .dt :global(p:last-child) { margin-bottom: 0; }
